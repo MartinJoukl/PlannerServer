@@ -4,39 +4,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3537eab3-212d-4914-9401-bfe3598ee84e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mvnw" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mvnw.cmd" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/SchedulerGui.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Agent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Authorization.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Client.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/KeyType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Persistence.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Queue.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/TaskStatus.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/AddQueueController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/QueueCellFactory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/module-info.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/joukl/plannerexec/plannerserver/add-queue-form-view.fxml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/joukl/plannerexec/plannerserver/application-view.fxml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/joukl/plannerexec/plannerserver/style.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/keys/README.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/keys/clientPublic.key" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/keys/serverPrivate.key" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/keys/serverPublic.key" afterDir="false" />
+    <list default="true" id="3537eab3-212d-4914-9401-bfe3598ee84e" name="Changes" comment="Initial commit">
+      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/ClientStatus.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/ConnectionHandler.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/TaskException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/TaskCellFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Authorization.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Authorization.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Client.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Persistence.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Persistence.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/module-info.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/module-info.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/joukl/plannerexec/plannerserver/application-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/joukl/plannerexec/plannerserver/application-view.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/keys/clientPublic.key" beforeDir="false" afterPath="$PROJECT_DIR$/storage/keys/clientPublic.key" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/keys/serverPrivate.key" beforeDir="false" afterPath="$PROJECT_DIR$/storage/keys/serverPrivate.key" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/keys/serverPublic.key" beforeDir="false" afterPath="$PROJECT_DIR$/storage/keys/serverPublic.key" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +59,8 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;
+    &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.maven.repository.indices&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -84,9 +70,14 @@
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="joukl.plannerexec.plannerserver" />
     </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="joukl.plannerexec.plannerserver.viewModel" />
+    </key>
   </component>
   <component name="RunManager">
     <configuration name="SchedulerGui" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="ALTERNATIVE_JRE_PATH" value="17" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <option name="MAIN_CLASS_NAME" value="joukl.plannerexec.plannerserver.SchedulerGui" />
       <module name="PlannerServer" />
       <extension name="coverage">
@@ -118,8 +109,19 @@
       <workItem from="1675106991455" duration="3822000" />
       <workItem from="1675539331770" duration="8578000" />
       <workItem from="1675620790300" duration="6415000" />
-      <workItem from="1676121213226" duration="14642000" />
+      <workItem from="1676121213226" duration="17793000" />
+      <workItem from="1676145233720" duration="4188000" />
+      <workItem from="1676201879784" duration="16461000" />
+      <workItem from="1676396624763" duration="308000" />
     </task>
+    <task id="LOCAL-00001" summary="Initial commit">
+      <created>1676142097953</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1676142097953</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -150,20 +152,28 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="Initial commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="Initial commit" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java</url>
-          <line>85</line>
-          <option name="timeStamp" value="12" />
+          <line>139</line>
+          <option name="timeStamp" value="21" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java</url>
+          <line>97</line>
+          <option name="timeStamp" value="22" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="Application">
         <watch expression="files" />
+        <watch expression="name" />
       </configuration>
     </watches-manager>
   </component>

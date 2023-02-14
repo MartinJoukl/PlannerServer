@@ -15,10 +15,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import joukl.plannerexec.plannerserver.SchedulerGui;
-import joukl.plannerexec.plannerserver.model.Authorization;
-import joukl.plannerexec.plannerserver.model.Persistence;
-import joukl.plannerexec.plannerserver.model.Queue;
-import joukl.plannerexec.plannerserver.model.Scheduler;
+import joukl.plannerexec.plannerserver.model.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,12 +34,34 @@ public class ApplicationController {
     private Authorization authorization;
     private final ObservableList<Queue> queueList = FXCollections.observableList(new ArrayList<>());
 
+    private final ObservableList<Task> taskList = FXCollections.observableList(new ArrayList<>());
+
     @FXML
     private Label keyStatusLBL;
     @FXML
     private Label clientKeyStatusLBL;
     @FXML
     private ListView<Queue> queueListView;
+    @FXML
+    private ListView<Task> plannedJobsListView;
+    @FXML
+    private Label jobIdLBL;
+    @FXML
+    private Label taskNameLBL;
+    @FXML
+    private Label taskPriorityLBL;
+    @FXML
+    private ListView<String> argumentsListView;
+    @FXML
+    private ListView<String> resultsLocationListView;
+    @FXML
+    private Label repeatsLBL;
+    @FXML
+    private Label costOfJobLBL;
+    @FXML
+    private Label statusLBL;
+    @FXML
+    private Label queueLBL;
 
     @FXML
     private void initialize() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
@@ -58,10 +77,25 @@ public class ApplicationController {
         queueListView.setItems(queueList);
 
         queueListView.setCellFactory(new QueueCellFactory());
+        plannedJobsListView.setItems(taskList);
+        plannedJobsListView.setCellFactory(new TaskCellFactory());
+        plannedJobsListView.setOnMouseClicked((mouseEvent) -> {
+            Task selectedTask = plannedJobsListView.getSelectionModel().getSelectedItem();
+            if (selectedTask != null) {
+                onSelectedTask(selectedTask);
+            }
+        });
 
         refreshQueueList();
         refreshServerKeyStatus();
         refreshClientKeyStatus();
+        refreshTaskList();
+    }
+
+    private void refreshTaskList() {
+        taskList.clear();
+        taskList.addAll(Scheduler.getScheduler().getTasksAsList());
+        plannedJobsListView.refresh();
     }
 
     private void refreshServerKeyStatus() {
@@ -80,14 +114,60 @@ public class ApplicationController {
         }
     }
 
-    public void onActionUploadTaskButton(ActionEvent actionEvent) {
+    @FXML
+    public void onActionUploadTaskButton(ActionEvent actionEvent) throws IOException {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         File directory = directoryChooser.showDialog(SchedulerGui.mainStage);
         if (directory == null || !directory.isDirectory()) {
             return;
         }
         File[] files = directory.listFiles();
-       // Optional<File> configFile = Arrays.stream(files).fi
+        Optional<File> configFileOptional = Arrays.stream(files).filter((file -> file.getName().equals("taskConfig.json"))).findAny();
+        Optional<File> payloadDirOptional = Arrays.stream(files).filter((file -> file.getName().equals("payload"))).findAny();
+        if (configFileOptional.isEmpty() || payloadDirOptional.isEmpty() || !payloadDirOptional.get().isDirectory()) {
+            showError("Task upload failed", "Configuration file or payload not found", "Directory must contain both taskConfig.json and directory payload");
+            return;
+        }
+        File configFile = configFileOptional.get();
+        try {
+            Task readTask = Persistence.readTaskConfiguration(configFile);
+            if (readTask.getQueue() == null) {
+                showError("Task upload failed", "Queue doesn't exist", "Queue specified in config.json was not found.");
+                return;
+            }
+            readTask.getQueue().getTasks().add(readTask);
+            showInfo("Task uploaded sucesfully", "Task uploaded successfully", "Task with name: " + readTask.getName() + " has been uploaded successfully to the queue: " + readTask.getQueue().getName() + ".");
+            refreshTaskList();
+            selectTask(readTask);
+        } catch (Exception ex) {
+            showError("Unsuccessful parsing", "Configuration file was not parsed successfully", "Task parsing failed with following message: " + ex.getMessage());
+        }
+
+    }
+
+    private void selectTask(Task task) {
+        plannedJobsListView.getSelectionModel().select(task);
+        onSelectedTask(task);
+    }
+
+    private void onSelectedTask(Task task) {
+        jobIdLBL.setText(task.getId());
+        taskNameLBL.setText(task.getName());
+        taskPriorityLBL.setText(String.valueOf(task.getPriority()));
+        argumentsListView.setItems(FXCollections.observableList(task.getParameters()));
+        resultsLocationListView.setItems(FXCollections.observableList(task.getPathToResults()));
+        costOfJobLBL.setText(String.valueOf(task.getCost()));
+        statusLBL.setText(task.getStatus().toString());
+        queueLBL.setText(task.getQueue().getName());
+        repeatsLBL.setText(String.valueOf(Math.abs(task.getFrom() - task.getTo())));
+    }
+
+    private static void showError(String title, String header, String contentText) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setContentText(contentText);
+        alert.setHeaderText(header);
+        alert.show();
     }
 
     public void onActionChangeJobStatus(ActionEvent actionEvent) {
@@ -104,17 +184,9 @@ public class ApplicationController {
 
         privateKeyStatus.setValue(authorization.changeServerKeys(file));
         if (privateKeyStatus.getValue()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Private key changed");
-            alert.setContentText("Key changed successfully. A new public key was also generated.");
-            alert.setHeaderText("Private key changed");
-            alert.show();
+            showInfo("Private key changed", "Private key changed", "Key changed successfully. A new public key was also generated.");
         } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Private key not changed");
-            alert.setContentText("Changing of server key failed.");
-            alert.setHeaderText("Changing of server key failed");
-            alert.show();
+            showError("Private key not changed", "Changing of server key failed", "Changing of server key failed.");
         }
     }
 
@@ -122,18 +194,18 @@ public class ApplicationController {
     public void onActionGeneratePrivateKey(ActionEvent actionEvent) throws NoSuchAlgorithmException {
         privateKeyStatus.setValue(authorization.generateServerKeys());
         if (privateKeyStatus.getValue()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Private key generated");
-            alert.setContentText("Key generated successfully.");
-            alert.setHeaderText("Key generation");
-            alert.show();
+            showInfo("Private key generated", "Key generation", "Key generated successfully.");
         } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Private key generating failed");
-            alert.setContentText("Key generation failed.");
-            alert.setHeaderText("Key generation");
-            alert.show();
+            showError("Private key generating failed", "Key generation", "Key generation failed.");
         }
+    }
+
+    private static void showInfo(String title, String header, String contentText) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setContentText(contentText);
+        alert.setHeaderText(header);
+        alert.show();
     }
 
     @FXML
@@ -152,17 +224,9 @@ public class ApplicationController {
 
         boolean success = Persistence.saveBytesToFile(file.toPath(), authorization.getServerPublicKey().getEncoded());
         if (success) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Export was successful");
-            alert.setContentText("Key exported successfully and is ready to be given to clients.");
-            alert.setHeaderText("Export");
-            alert.show();
+            showInfo("Export was successful", "Export", "Key exported successfully and is ready to be given to clients.");
         } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Export failed");
-            alert.setContentText("Exporting of key failed.");
-            alert.setHeaderText("Key exporting failed");
-            alert.show();
+            showError("Export failed", "Key exporting failed", "Exporting of key failed.");
         }
     }
 
@@ -177,17 +241,9 @@ public class ApplicationController {
 
         clientKeyStatus.setValue(authorization.changeClientKey(file));
         if (clientKeyStatus.getValue()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Client public key changed");
-            alert.setContentText("Key changed successfully.");
-            alert.setHeaderText("Client public key changed");
-            alert.show();
+            showInfo("Client public key changed", "Client public key changed", "Key changed successfully.");
         } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Client public key not changed");
-            alert.setContentText("Changing of server key failed.");
-            alert.setHeaderText("Changing of client public key failed");
-            alert.show();
+            showError("Client public key not changed", "Changing of client public key failed", "Changing of server key failed.");
         }
     }
 

@@ -1,18 +1,20 @@
 package joukl.plannerexec.plannerserver.model;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Scheduler {
-    private static final Scheduler SCHEDULER= new Scheduler();
+    private static final Scheduler SCHEDULER = new Scheduler();
 
-    private Scheduler(){
+    private Scheduler() {
     }
 
     public static Scheduler getScheduler() {
         return SCHEDULER;
     }
+
     private List<Client> clients = new ArrayList<>();
-    private Map<String,Queue> queueMap = new TreeMap<>();
+    private Map<String, Queue> queueMap = new TreeMap<>();
     private Authorization authorization = new Authorization();
     //internal for
     //private PriorityQueue queuesPriority = new PriorityQueue<>(Comparator.comparingInt(Queue::getPriority));
@@ -27,11 +29,11 @@ public class Scheduler {
         this.clients = clients;
     }
 
-    public Map<String,Queue> getQueueMap() {
+    public Map<String, Queue> getQueueMap() {
         return queueMap;
     }
 
-    public void setQueueMap(Map<String,Queue> queueMap) {
+    public void setQueueMap(Map<String, Queue> queueMap) {
         this.queueMap = queueMap;
     }
 
@@ -41,5 +43,12 @@ public class Scheduler {
 
     public void setAuthorization(Authorization authorization) {
         this.authorization = authorization;
+    }
+
+    //for gui
+    public List<Task> getTasksAsList() {
+        List<Task> tasks = new ArrayList<>();
+        queueMap.forEach((key, queue) -> tasks.addAll(queue.getTasks()));
+        return tasks;
     }
 }
