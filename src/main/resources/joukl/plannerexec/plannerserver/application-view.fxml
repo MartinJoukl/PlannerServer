@@ -139,7 +139,7 @@
                                           <Label text="Upload file with task" />
                                           <Button fx:id="uploadTaskButton" mnemonicParsing="false" onAction="#onActionUploadTaskButton" prefHeight="40.0" prefWidth="125.0" style="-fx-background-radius: 0;" text="Upload task ..." GridPane.columnIndex="1" />
                                           <Label text="Priority" GridPane.rowIndex="5" />
-                                          <Label fx:id="taskPriorityLBL" text="placeholder" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                          <Label fx:id="taskPriorityLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="5" />
                                           <Label text="Arguments" GridPane.rowIndex="6" />
                                           <Label text="Results locations" GridPane.rowIndex="7" />
                                           <Label text="Number of repeats" GridPane.rowIndex="8" />
@@ -151,18 +151,18 @@
                                              <GridPane.margin>
                                                 <Insets bottom="10.0" top="10.0" />
                                              </GridPane.margin></ListView>
-                                          <Label fx:id="repeatsLBL" text="placeholder" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                                          <Label fx:id="repeatsLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="8" />
                                           <Label text="Cost of job" GridPane.rowIndex="9" />
-                                          <Label fx:id="costOfJobLBL" text="placeholder" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                                          <Label fx:id="costOfJobLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="9" />
                                           <Label text="Status" GridPane.rowIndex="10" />
-                                          <Label fx:id="statusLBL" text="placeholder" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                                          <Label fx:id="statusLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="10" />
                                           <Button fx:id="planButton" alignment="CENTER" mnemonicParsing="false" onAction="#onActionChangeJobStatus" prefHeight="40.0" prefWidth="200.0" text="Activate/Deactivate" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="12" GridPane.valignment="CENTER" />
                                           <Label text="Queue" GridPane.rowIndex="11" />
-                                          <Label fx:id="queueLBL" text="placeholder" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+                                          <Label fx:id="queueLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="11" />
                                           <Label text="Job id" GridPane.rowIndex="2" />
-                                          <Label fx:id="jobIdLBL" text="placeholder" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                          <Label fx:id="jobIdLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                           <Label text="Task name" GridPane.rowIndex="4" />
-                                          <Label fx:id="taskNameLBL" text="placeholder" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                          <Label fx:id="taskNameLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="4" />
                                        </children>
                                     </GridPane>
                                  </children>
@@ -261,7 +261,7 @@
                                                 <Insets />
                                              </GridPane.margin>
                                           </Button>
-                                          <Button alignment="CENTER" mnemonicParsing="false" onAction="#onActionAddQueue" prefHeight="40.0" prefWidth="200.0" text="Add queue" GridPane.halignment="LEFT" GridPane.rowIndex="9" GridPane.valignment="CENTER">
+                                          <Button alignment="CENTER" mnemonicParsing="false" onAction="#onActionAddQueue" prefHeight="40.0" prefWidth="200.0" text="Add queue ..." GridPane.halignment="LEFT" GridPane.rowIndex="9" GridPane.valignment="CENTER">
                                              <GridPane.margin>
                                                 <Insets />
                                              </GridPane.margin>
