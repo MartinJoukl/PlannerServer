@@ -1,9 +1,7 @@
 package joukl.plannerexec.plannerserver.model;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.*;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -98,51 +96,53 @@ public class Scheduler {
                          */
             try {
 
-                Cipher cipherIn = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-                cipherIn.init(Cipher.DECRYPT_MODE, authorization.getServerPrivateKey());
+                InputStream serverInputStream = clientSocket.getInputStream();
+                byte[] encryptedKey = serverInputStream.readAllBytes();
+                System.out.println("here");
 
-                CipherInputStream inputStream = new CipherInputStream(clientSocket.getInputStream(), cipherIn);
+                Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+                cipher.init(Cipher.PRIVATE_KEY, authorization.getServerPrivateKey());
+                byte[] decryptedKey = cipher.doFinal(encryptedKey);
+                System.out.println("and here");
 
-                Cipher cipherOut = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-                cipherIn.init(Cipher.ENCRYPT_MODE, authorization.getClientPublicKey());
-                NotClosingOutputStream notClosingOutputStream = new NotClosingOutputStream(clientSocket.getOutputStream());
-                CipherOutputStream outputStream = new CipherOutputStream(notClosingOutputStream, cipherOut);
+                SecretKey originalKey = new SecretKeySpec(decryptedKey, 0, decryptedKey.length, "AES");
+                Cipher aesCipher = Cipher.getInstance("AES");
+                aesCipher.init(Cipher.DECRYPT_MODE, originalKey);
 
-                String message = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+                CipherInputStream cipherInputStream = new CipherInputStream(clientSocket.getInputStream(), aesCipher);
 
-                if (message.contains("NEW")) {
-                    String[] parsedMessage = message.split(";");
-
-                    Agent agent = Agent.valueOf(parsedMessage[1]);
-                    long resources = Long.parseLong(parsedMessage[2]);
-                    String id = String.valueOf(UUID.randomUUID());
-
-                }
-
-                System.out.println(message);
-                System.out.println("done :)");
-                //ACK
-                outputStream.write((char) 0x06);
-                outputStream.flush();
-                outputStream.close();
-                //another message - queues
-                message = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                System.out.println(message);
-                System.out.println("done again :)");
+                Cipher aesOutCipher = Cipher.getInstance("AES");
+                aesCipher.init(Cipher.ENCRYPT_MODE, originalKey);
+                CipherOutputStream AESoutStream = new CipherOutputStream(clientSocket.getOutputStream(), aesOutCipher);
+                AESoutStream.write("Pokus 123 pokus ...".getBytes(StandardCharsets.UTF_8));
 
 
-            } catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
-                System.out.println("oops");
+                System.out.println("at end");
+                cipherInputStream.readAllBytes();
+                String message = new String(cipherInputStream.readAllBytes(), StandardCharsets.UTF_8);
+                System.out.println(message + " mesič");
+
+                cipherInputStream.close();
+
+            } catch (IOException e) {
                 throw new RuntimeException(e);
-            }
+            } catch (NoSuchPaddingException | InvalidKeyException e) {
+                throw new RuntimeException(e);
                     /*
                 });
 
                      */
-        }
+            } catch (IllegalBlockSizeException e) {
+                throw new RuntimeException(e);
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            } catch (BadPaddingException e) {
+                throw new RuntimeException(e);
+            }
             /*
         });
 
              */
+        }
     }
 }
