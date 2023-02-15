@@ -11,9 +11,9 @@ public enum Agent {
     }
 
     Agent getByAgentName(String value) {
-        if (value.equals(WINDOWS.agentName)) {
+        if (value.equalsIgnoreCase(WINDOWS.agentName)) {
             return WINDOWS;
-        } else if (value.equals(LINUX.agentName)) {
+        } else if (value.equalsIgnoreCase(LINUX.agentName)) {
             return LINUX;
         } else {
             throw new RuntimeException("Unsupported agent" + agentName);

@@ -3,7 +3,18 @@ package joukl.plannerexec.plannerserver.model;
 import java.security.Timestamp;
 import java.util.List;
 public class Client {
-    private String name;
+
+    public Client(String id, Agent agent, long resources, ClientStatus status, Timestamp lastReply, int numberOfTasks, List<Task> workingOnTasks, Queue queue) {
+        this.id = id;
+        this.agent = agent;
+        this.resources = resources;
+        this.status = status;
+        this.lastReply = lastReply;
+        this.numberOfTasks = numberOfTasks;
+        this.workingOnTasks = workingOnTasks;
+        this.queue = queue;
+    }
+
     private String id;
     private Agent agent;
     private long resources;
@@ -12,14 +23,6 @@ public class Client {
     private int numberOfTasks;
     private List<Task> workingOnTasks;
     private Queue queue;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getId() {
         return id;

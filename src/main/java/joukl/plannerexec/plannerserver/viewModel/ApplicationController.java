@@ -62,6 +62,8 @@ public class ApplicationController {
     private Label statusLBL;
     @FXML
     private Label queueLBL;
+    @FXML
+    private Label listeningStatusLBL;
 
     @FXML
     private void initialize() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
@@ -274,5 +276,19 @@ public class ApplicationController {
                 queueList.add(value);
             }
         });
+    }
+
+    @FXML
+    public void onActionStartListening(ActionEvent actionEvent) throws IOException {
+        Scheduler scheduler = Scheduler.getScheduler();
+        if(!scheduler.isListening()){
+            scheduler.startListening();
+        }
+
+        if (!scheduler.isListening()) {
+            listeningStatusLBL.setText("Not listening");
+        } else {
+            listeningStatusLBL.setText("Listening on port: " + scheduler.getServerSocket().getLocalPort());
+        }
     }
 }
