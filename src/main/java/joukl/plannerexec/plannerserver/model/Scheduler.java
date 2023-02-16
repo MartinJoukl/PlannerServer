@@ -8,7 +8,6 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Timestamp;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,8 +27,7 @@ public class Scheduler {
     private Authorization authorization = new Authorization();
     private ServerSocket serverSocket;
 
-    private PrintWriter out;
-    private BufferedInputStream in;
+    private final char STOP_SYMBOL = (char) 1f;
 
     private static ExecutorService pool = Executors.newCachedThreadPool();
     //internal for
@@ -88,41 +86,60 @@ public class Scheduler {
 
          */
         while (true) {
-            final Socket clientSocket = serverSocket.accept();
+            final Socket socket = serverSocket.accept();
             // start processing on another thread, accept more
                         /*
                 pool.submit(() -> {
 
                          */
-            try {
-
-                InputStream serverInputStream = clientSocket.getInputStream();
-                byte[] encryptedKey = serverInputStream.readAllBytes();
-                System.out.println("here");
+            socket.setTcpNoDelay(true);
+            try (DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
+                InputStream in = socket.getInputStream();
+                byte[] encryptedKey = in.readNBytes(256);
 
                 Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
                 cipher.init(Cipher.PRIVATE_KEY, authorization.getServerPrivateKey());
                 byte[] decryptedKey = cipher.doFinal(encryptedKey);
-                System.out.println("and here");
 
+                //decrypting
                 SecretKey originalKey = new SecretKeySpec(decryptedKey, 0, decryptedKey.length, "AES");
-                Cipher aesCipher = Cipher.getInstance("AES");
-                aesCipher.init(Cipher.DECRYPT_MODE, originalKey);
+                Cipher aesDecrypting = Cipher.getInstance("AES");
+                aesDecrypting.init(Cipher.DECRYPT_MODE, originalKey);
+                //encrypting
+                Cipher aesEncrypting = Cipher.getInstance("AES");
+                aesEncrypting.init(Cipher.ENCRYPT_MODE, originalKey);
+                //finish initial read
 
-                CipherInputStream cipherInputStream = new CipherInputStream(clientSocket.getInputStream(), aesCipher);
+                for (int i = 0; i < 1000; i--) {
+                    byte[] messageToSend = ("Ahoj"+i).getBytes(StandardCharsets.UTF_8);
 
-                Cipher aesOutCipher = Cipher.getInstance("AES");
-                aesCipher.init(Cipher.ENCRYPT_MODE, originalKey);
-                CipherOutputStream AESoutStream = new CipherOutputStream(clientSocket.getOutputStream(), aesOutCipher);
-                AESoutStream.write("Pokus 123 pokus ...".getBytes(StandardCharsets.UTF_8));
+                    sendEncryptedMessage(aesEncrypting, out, messageToSend);
+                    String message = readEncryptedString(aesDecrypting, in);
+                    System.out.println(message);
+                }
+
+                //*    CipherInputStream aesCipherInputStream = new CipherInputStream(socket.getInputStream(), aesDecrypting);
 
 
-                System.out.println("at end");
-                cipherInputStream.readAllBytes();
-                String message = new String(cipherInputStream.readAllBytes(), StandardCharsets.UTF_8);
-                System.out.println(message + " mesič");
+                //fake wrapper for output stream - as cipher stream won't actually send when flushed.
+                //  NotClosingOutputStream notClosingOutputStream = new NotClosingOutputStream(socket.getOutputStream());
+                //*    CipherOutputStream AESoutStream = new CipherOutputStream(socket.getOutputStream(), aesEncrypting);
 
-                cipherInputStream.close();
+                //end of symetric key exchange
+
+                byte[] bytes = readBytesUntilStop(in);
+                String message = new String(bytes, StandardCharsets.UTF_8);
+                System.out.println(message + "<--msg1");
+                System.out.println("----");
+                //send response
+                //  AESoutStream.write("navázáno spojení".getBytes(StandardCharsets.UTF_8));
+                //  AESoutStream.flush();
+                //  AESoutStream.close();
+
+
+                byte[] bytes2 = readBytesUntilStop(in);
+                message = new String(bytes2, StandardCharsets.UTF_8);
+                System.out.println(message + "<--- msg2");
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -144,5 +161,44 @@ public class Scheduler {
 
              */
         }
+    }
+
+    private byte[] readBytesUntilStop(InputStream cipherInputStream) throws IOException {
+        List<Byte> bytes = new ArrayList<>();
+        int byteAsInt = cipherInputStream.read();
+        while (!(byteAsInt == -1 || (char) byteAsInt == STOP_SYMBOL)) {
+            bytes.add((byte) byteAsInt);
+            byteAsInt = cipherInputStream.read();
+        }
+        byte[] bytesArr = new byte[bytes.size()];
+        for (int i = 0; i < bytesArr.length; i++) {
+            bytesArr[i] = bytes.get(i);
+        }
+
+        return bytesArr;
+    }
+
+    public String decrypt(byte[] encrypted, Cipher cipher) throws IllegalBlockSizeException, BadPaddingException {
+        byte[] plainText = cipher.doFinal(Base64.getDecoder().decode(encrypted));
+        return new String(plainText);
+    }
+
+    public String encrypt(byte[] decrypted, Cipher cipher) throws IllegalBlockSizeException, BadPaddingException {
+        byte[] cipherText = cipher.doFinal(decrypted);
+        return Base64.getEncoder().encodeToString(cipherText);
+    }
+
+    private void sendEncryptedMessage(Cipher aesEncrypting, DataOutputStream out, byte[] messageToSend) throws IllegalBlockSizeException, BadPaddingException, IOException {
+        String encrypted = encrypt(messageToSend, aesEncrypting);
+        String withStop = encrypted+STOP_SYMBOL;
+
+        out.write(withStop.getBytes(StandardCharsets.UTF_8));
+        out.flush();
+    }
+
+    private String readEncryptedString(Cipher aesDecrypting, InputStream in) throws IOException, IllegalBlockSizeException, BadPaddingException {
+        byte[] bytes = readBytesUntilStop(in);
+        String message = decrypt(bytes, aesDecrypting);
+        return message;
     }
 }
