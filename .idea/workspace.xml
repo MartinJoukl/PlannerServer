@@ -4,9 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3537eab3-212d-4914-9401-bfe3598ee84e" name="Changes" comment="Socket 2">
+    <list default="true" id="3537eab3-212d-4914-9401-bfe3598ee84e" name="Changes" comment="manual cipher">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Client.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Persistence.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Persistence.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Queue.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Queue.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -122,7 +127,8 @@
       <workItem from="1676454683219" duration="561000" />
       <workItem from="1676455313324" duration="3655000" />
       <workItem from="1676459503544" duration="33605000" />
-      <workItem from="1676569357289" duration="12517000" />
+      <workItem from="1676569357289" duration="12919000" />
+      <workItem from="1676718156731" duration="16011000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1676142097953</created>
@@ -152,7 +158,14 @@
       <option name="project" value="LOCAL" />
       <updated>1676500322709</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="manual cipher">
+      <created>1676586561126</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1676586561126</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -186,20 +199,16 @@
     <MESSAGE value="Initial commit" />
     <MESSAGE value="Socket" />
     <MESSAGE value="Socket 2" />
-    <option name="LAST_COMMIT_MESSAGE" value="Socket 2" />
+    <MESSAGE value="manual cipher" />
+    <option name="LAST_COMMIT_MESSAGE" value="manual cipher" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java</url>
-          <line>141</line>
+          <line>142</line>
           <option name="timeStamp" value="21" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>187</line>
-          <option name="timeStamp" value="109" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

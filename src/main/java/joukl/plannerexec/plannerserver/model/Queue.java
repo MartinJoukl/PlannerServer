@@ -6,7 +6,7 @@ public class Queue {
     private String name;
     private List<Agent> agents;
     private int capacity;
-    private PriorityQueue<Task> tasks = new PriorityQueue<>(Comparator.comparingLong(Task::getPriority));
+    private PriorityQueue<Task> tasks = new PriorityQueue<>(Comparator.comparingInt(Task::getPriority).reversed());
     private int priority;
 
     public Queue(String name, List<Agent> agents,

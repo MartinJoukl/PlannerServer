@@ -1,28 +1,27 @@
 package joukl.plannerexec.plannerserver.model;
 
-import java.security.Timestamp;
+import java.util.Date;
 import java.util.List;
+
 public class Client {
 
-    public Client(String id, Agent agent, long resources, ClientStatus status, Timestamp lastReply, int numberOfTasks, List<Task> workingOnTasks, Queue queue) {
+    public Client(String id, Agent agent, long availableResources, ClientStatus status, Date lastReply, List<Task> workingOnTasks, List<String> subscribedQueues) {
         this.id = id;
         this.agent = agent;
-        this.resources = resources;
+        this.availableResources = availableResources;
         this.status = status;
         this.lastReply = lastReply;
-        this.numberOfTasks = numberOfTasks;
         this.workingOnTasks = workingOnTasks;
-        this.queue = queue;
+        this.subscribedQueues = subscribedQueues;
     }
 
     private String id;
     private Agent agent;
-    private long resources;
+    private long availableResources;
     private ClientStatus status;
-    private Timestamp lastReply;
-    private int numberOfTasks;
+    private Date lastReply;
     private List<Task> workingOnTasks;
-    private Queue queue;
+    private List<String> subscribedQueues;
 
     public String getId() {
         return id;
@@ -40,12 +39,12 @@ public class Client {
         this.agent = agent;
     }
 
-    public long getResources() {
-        return resources;
+    public long getAvailableResources() {
+        return availableResources;
     }
 
-    public void setResources(long resources) {
-        this.resources = resources;
+    public void setAvailableResources(long availableResources) {
+        this.availableResources = availableResources;
     }
 
     public ClientStatus getStatus() {
@@ -56,20 +55,16 @@ public class Client {
         this.status = status;
     }
 
-    public Timestamp getLastReply() {
+    public Date getLastReply() {
         return lastReply;
     }
 
-    public void setLastReply(Timestamp lastReply) {
+    public void setLastReply(Date lastReply) {
         this.lastReply = lastReply;
     }
 
     public int getNumberOfTasks() {
-        return numberOfTasks;
-    }
-
-    public void setNumberOfTasks(int numberOfTasks) {
-        this.numberOfTasks = numberOfTasks;
+        return workingOnTasks.size();
     }
 
     public List<Task> getWorkingOnTasks() {
@@ -80,11 +75,11 @@ public class Client {
         this.workingOnTasks = workingOnTasks;
     }
 
-    public Queue getQueue() {
-        return queue;
+    public List<String> getSubscribedQueues() {
+        return subscribedQueues;
     }
 
-    public void setQueue(Queue queue) {
-        this.queue = queue;
+    public void setSubscribedQueues(List<String> subscribedQueues) {
+        this.subscribedQueues = subscribedQueues;
     }
 }

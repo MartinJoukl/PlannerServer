@@ -9,8 +9,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.zip.ZipOutputStream;
 
 public class Scheduler {
     private static final Scheduler SCHEDULER = new Scheduler();
@@ -23,11 +25,12 @@ public class Scheduler {
     }
 
     private Map<String, Client> clients = new HashMap<>();
-    private Map<String, Queue> queueMap = new TreeMap<>();
+    private Map<String, Queue> queueMap = new ConcurrentHashMap<>();
     private Authorization authorization = new Authorization();
     private ServerSocket serverSocket;
 
-    private final char STOP_SYMBOL = (char) 1f;
+    private final char STOP_SYMBOL = 31;
+    private final char ARR_STOP_SYMBOL = 30;
 
     private static ExecutorService pool = Executors.newCachedThreadPool();
     //internal for
@@ -109,14 +112,68 @@ public class Scheduler {
                 Cipher aesEncrypting = Cipher.getInstance("AES");
                 aesEncrypting.init(Cipher.ENCRYPT_MODE, originalKey);
                 //finish initial read
+                String message = readEncryptedString(aesDecrypting, in);
 
+                Client client;
+                //TODO metoda, registrace nového klienta
+                if (message.contains("NEW")) {
+                    String[] parsedMessage = message.split(";");
+
+                    Agent agent = Agent.valueOf(parsedMessage[1]);
+                    long availableResources = Long.parseLong(parsedMessage[2]);
+                    String id = String.valueOf(UUID.randomUUID());
+                    List<String> queues = readEncryptedList(aesDecrypting, in);
+
+                    client = new Client(id, agent, availableResources, ClientStatus.ACTIVE, new Date(), new ArrayList<>(), queues);
+                    clients.put(id, client);
+                    //send id to client
+                    sendEncryptedMessage(aesEncrypting, out, client.getId().getBytes(StandardCharsets.UTF_8));
+                } else {
+                    //ID;resources
+                    //TODO na klientovy
+                    //mesage contains id
+                    message = readEncryptedString(aesDecrypting, in);
+                    String[] parsedMessage = message.split(";");
+                    String id = parsedMessage[0];
+                    String availableResources = parsedMessage[1];
+
+                    client = clients.get(id);
+                    client.setAvailableResources(Long.parseLong(availableResources));
+                }
+                Task givenTask = null;
+                try {
+                    //mutex??
+                    givenTask = selectTaskAndRegisterIt(client);
+                    //zip file and send it through channel
+
+                    FileOutputStream fos = new FileOutputStream(givenTask.getPathToSourceDirectory() + ".zip");
+                    ZipOutputStream zipOut = new ZipOutputStream(fos);
+
+                    File fileToZip = new File(givenTask.getPathToSourceDirectory());
+                    Persistence.zipFile(fileToZip, fileToZip.getName(), zipOut);
+                    zipOut.close();
+                    fos.close();
+
+                    //send task to client
+                    // out.write();
+                } catch (Exception e) {
+                    if (givenTask != null) {
+                        //reschedule it
+                        givenTask.setStatus(TaskStatus.SCHEDULED);
+                    }
+                }
+
+                //validate capacity
+
+                /*
                 for (int i = 0; i < 1000; i--) {
                     byte[] messageToSend = ("Ahoj"+i).getBytes(StandardCharsets.UTF_8);
 
                     sendEncryptedMessage(aesEncrypting, out, messageToSend);
-                    String message = readEncryptedString(aesDecrypting, in);
                     System.out.println(message);
                 }
+
+                 */
 
                 //*    CipherInputStream aesCipherInputStream = new CipherInputStream(socket.getInputStream(), aesDecrypting);
 
@@ -127,19 +184,10 @@ public class Scheduler {
 
                 //end of symetric key exchange
 
-                byte[] bytes = readBytesUntilStop(in);
-                String message = new String(bytes, StandardCharsets.UTF_8);
-                System.out.println(message + "<--msg1");
-                System.out.println("----");
                 //send response
                 //  AESoutStream.write("navázáno spojení".getBytes(StandardCharsets.UTF_8));
                 //  AESoutStream.flush();
                 //  AESoutStream.close();
-
-
-                byte[] bytes2 = readBytesUntilStop(in);
-                message = new String(bytes2, StandardCharsets.UTF_8);
-                System.out.println(message + "<--- msg2");
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -163,10 +211,10 @@ public class Scheduler {
         }
     }
 
-    private byte[] readBytesUntilStop(InputStream cipherInputStream) throws IOException {
+    private byte[] readBytesUntilStop(InputStream cipherInputStream, char stopSymbol) throws IOException {
         List<Byte> bytes = new ArrayList<>();
         int byteAsInt = cipherInputStream.read();
-        while (!(byteAsInt == -1 || (char) byteAsInt == STOP_SYMBOL)) {
+        while (!(byteAsInt == -1 || (char) byteAsInt == stopSymbol)) {
             bytes.add((byte) byteAsInt);
             byteAsInt = cipherInputStream.read();
         }
@@ -190,15 +238,101 @@ public class Scheduler {
 
     private void sendEncryptedMessage(Cipher aesEncrypting, DataOutputStream out, byte[] messageToSend) throws IllegalBlockSizeException, BadPaddingException, IOException {
         String encrypted = encrypt(messageToSend, aesEncrypting);
-        String withStop = encrypted+STOP_SYMBOL;
+        String withStop = encrypted + STOP_SYMBOL;
 
         out.write(withStop.getBytes(StandardCharsets.UTF_8));
         out.flush();
     }
 
     private String readEncryptedString(Cipher aesDecrypting, InputStream in) throws IOException, IllegalBlockSizeException, BadPaddingException {
-        byte[] bytes = readBytesUntilStop(in);
+        byte[] bytes = readBytesUntilStop(in, STOP_SYMBOL);
         String message = decrypt(bytes, aesDecrypting);
         return message;
+    }
+
+    public String encryptList(List<String> toEncrypt, Cipher cipher) throws IllegalBlockSizeException, BadPaddingException {
+        StringBuilder encodedArrWithDeli = new StringBuilder();
+        for (int i = 0; i < 10; i++) {
+            //encode each item
+            String encodedItem = Base64.getEncoder().encodeToString(toEncrypt.get(i).getBytes(StandardCharsets.UTF_8));
+            encodedArrWithDeli.append(encodedItem).append(STOP_SYMBOL);
+        }
+
+        //encrypt whole array
+        String enryptedArr = encrypt(encodedArrWithDeli.toString().getBytes(StandardCharsets.UTF_8), cipher);
+        //add delimiter
+        enryptedArr += (ARR_STOP_SYMBOL);
+        return enryptedArr;
+    }
+
+    public void sendEncryptedList(Cipher cipher, DataOutputStream out, List<String> toEncrypt) throws IllegalBlockSizeException, BadPaddingException, IOException {
+        String encrypted = encryptList(toEncrypt, cipher);
+        out.write(encrypted.getBytes(StandardCharsets.UTF_8));
+        out.flush();
+    }
+
+    private List<String> readEncryptedList(Cipher aesDecrypting, InputStream in) throws IOException, IllegalBlockSizeException, BadPaddingException {
+        //read array bytes
+        byte[] arrBase64 = readBytesUntilStop(in, ARR_STOP_SYMBOL);
+
+        //decrypt message, so we have itemInBase64+stop_symbol
+        String arrMessage = decrypt(arrBase64, aesDecrypting);
+        //split items using deli
+        List<String> base64Items = List.of(arrMessage.split(String.valueOf(STOP_SYMBOL)));
+
+        return base64Items.stream()
+                .map((encodedItem) -> new String(Base64.getDecoder().decode(encodedItem), StandardCharsets.UTF_8))
+                .toList();
+    }
+
+    private synchronized Task selectTaskAndRegisterIt(Client client) {
+        List<String> subscribedQueues = client.getSubscribedQueues();
+        //if client does not specify queues, subscribe to all
+        if (subscribedQueues == null || subscribedQueues.isEmpty()) {
+            subscribedQueues = queueMap.keySet().stream().toList();
+        }
+
+        List<String> subscribedQueuesFinal = subscribedQueues;
+
+        Collection<Queue> queues = queueMap.values();
+        //get only queues that client contains, order them by priority
+        List<Queue> subscribedNotIteratedQueues = new ArrayList<>(queues.stream().
+                filter((q) -> subscribedQueuesFinal.contains(q.getName()))
+                .sorted(Comparator.comparingInt(Queue::getPriority).reversed())
+                .toList());
+
+        //if we have no queue
+        if (subscribedNotIteratedQueues.isEmpty()) {
+            return null;
+        }
+
+        while (!subscribedNotIteratedQueues.isEmpty()) {
+            // always get first task
+            int priority = subscribedNotIteratedQueues.get(0).getPriority();
+            List<Queue> queuesWithSamePriority = subscribedNotIteratedQueues.stream().filter((q -> q.getPriority() == priority)).toList();
+            subscribedNotIteratedQueues.removeIf((q) -> q.getPriority() == priority);
+
+            // create common pool for task from queues
+            PriorityQueue<Task> tasks = new PriorityQueue<>(Comparator.comparingInt(Task::getPriority).reversed());
+            for (Queue iteratedQueue : queuesWithSamePriority
+            ) {
+                tasks.addAll(iteratedQueue.getTasks());
+            }
+            //remove all task that are not in SCHEDULED state or the cost is higher than available resources
+            tasks.removeIf((t) -> t.getStatus() != TaskStatus.SCHEDULED || t.getCost() > client.getAvailableResources());
+
+            //now we have pool with task, retrieve task with the highest priority (first) or return if we have no task
+            if (tasks.isEmpty()) {
+                continue;
+            }
+
+            Task task = tasks.remove();
+            task.setStatus(TaskStatus.SCHEDULED);
+            client.getWorkingOnTasks().add(task);
+
+            return task;
+        }
+        //we have no task
+        return null;
     }
 }

@@ -16,6 +16,7 @@ public class Task {
     private String pathToExecutable;
     private List<String> pathToResults;
     private List<String> parameters;
+    private String pathToSourceDirectory;
     private int from;
 
     private int to;
@@ -84,6 +85,14 @@ public class Task {
 
     public int getPriority() {
         return priority;
+    }
+
+    public String getPathToSourceDirectory() {
+        return pathToSourceDirectory;
+    }
+
+    public void setPathToSourceDirectory(String pathToSourceDirectory) {
+        this.pathToSourceDirectory = pathToSourceDirectory;
     }
 
     public void setPriority(int priority) {

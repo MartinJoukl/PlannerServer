@@ -133,6 +133,7 @@ public class ApplicationController {
         File configFile = configFileOptional.get();
         try {
             Task readTask = Persistence.readTaskConfiguration(configFile);
+            readTask.setPathToSourceDirectory(directory.getAbsolutePath());
             if (readTask.getQueue() == null) {
                 showError("Task upload failed", "Queue doesn't exist", "Queue specified in config.json was not found.");
                 return;
@@ -281,7 +282,7 @@ public class ApplicationController {
     @FXML
     public void onActionStartListening(ActionEvent actionEvent) throws IOException {
         Scheduler scheduler = Scheduler.getScheduler();
-        if(!scheduler.isListening()){
+        if (!scheduler.isListening()) {
             scheduler.startListening();
         }
 
