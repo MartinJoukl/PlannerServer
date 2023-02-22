@@ -9,11 +9,12 @@ import java.util.UUID;
 public class Task {
     private String id;
     private long cost;
-
     @JsonIgnore
     private Client clientWorkingOnThisTask;
     private String name;
-    private String pathToExecutable;
+
+    private String executePath;
+    private String commandToExecute;
     private List<String> pathToResults;
     private List<String> parameters;
     @JsonIgnore
@@ -118,12 +119,12 @@ public class Task {
         this.status = status;
     }
 
-    public String getPathToExecutable() {
-        return pathToExecutable;
+    public String getCommandToExecute() {
+        return commandToExecute;
     }
 
-    public void setPathToExecutable(String pathToExecutable) {
-        this.pathToExecutable = pathToExecutable;
+    public void setCommandToExecute(String commandToExecute) {
+        this.commandToExecute = commandToExecute;
     }
 
     public List<String> getPathToResults() {
@@ -158,16 +159,25 @@ public class Task {
         this.pathToZipFile = pathToZipFile;
     }
 
+    public String getExecutePath() {
+        return executePath;
+    }
+
+    public void setExecutePath(String executePath) {
+        this.executePath = executePath;
+    }
+
     public Task(@JsonProperty("cost") long cost, @JsonProperty("name") String name,
-                @JsonProperty("pathToExecutable") String pathToExecutable, @JsonProperty("pathToResults") List<String> pathToResults,
-                @JsonProperty("timeout") long timeoutInMillis, @JsonProperty("priority") int priority, @JsonProperty("queue") String queueName) {
+                @JsonProperty("commandToExecute") String commandToExecute, @JsonProperty("pathToResults") List<String> pathToResults,
+                @JsonProperty("timeout") long timeoutInMillis, @JsonProperty("priority") int priority, @JsonProperty("queue") String queueName, @JsonProperty("executePath") String executePath) {
         this.cost = cost;
         this.name = name;
-        this.pathToExecutable = pathToExecutable;
+        this.commandToExecute = commandToExecute;
         this.pathToResults = pathToResults;
         this.timeoutInMillis = timeoutInMillis;
         this.priority = priority;
         this.queue = Scheduler.getScheduler().getQueueMap().get(queueName);
+        this.executePath = executePath;
 
         this.id = UUID.randomUUID().toString();
 
