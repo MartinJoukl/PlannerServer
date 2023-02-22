@@ -1,10 +1,14 @@
 package joukl.plannerexec.plannerserver.model;
 
+import javafx.application.Platform;
+import joukl.plannerexec.plannerserver.viewModel.ApplicationController;
+
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -12,10 +16,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.zip.ZipOutputStream;
+
+import static java.io.File.separator;
 
 public class Scheduler {
     private static final Scheduler SCHEDULER = new Scheduler();
+
+    public static final String PATH_TO_TASK_STORAGE = "storage" + separator + "tasks" + separator;
 
     private Scheduler() {
     }
@@ -81,134 +88,157 @@ public class Scheduler {
         this.serverSocket = serverSocket;
     }
 
-    public void startListening() throws IOException {
+    public void stopListening() throws IOException {
+        serverSocket.close();
+    }
+
+    public void startListening(ApplicationController guiToRefresh) throws IOException {
         serverSocket = new ServerSocket(6660);
         //listen on new thread
-        /*
+
         pool.submit(() -> {
 
-         */
-        while (true) {
-            final Socket socket = serverSocket.accept();
-            // start processing on another thread, accept more
-                        /*
+            while (!serverSocket.isClosed()) {
+                final Socket socket;
+                try {
+                    socket = serverSocket.accept();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                // start processing on another thread, accept more
+
                 pool.submit(() -> {
 
-                         */
-            socket.setTcpNoDelay(true);
-            try (DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
-                InputStream in = socket.getInputStream();
-                byte[] encryptedKey = in.readNBytes(256);
-
-                Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-                cipher.init(Cipher.PRIVATE_KEY, authorization.getServerPrivateKey());
-                byte[] decryptedKey = cipher.doFinal(encryptedKey);
-
-                //decrypting
-                SecretKey originalKey = new SecretKeySpec(decryptedKey, 0, decryptedKey.length, "AES");
-                Cipher aesDecrypting = Cipher.getInstance("AES");
-                aesDecrypting.init(Cipher.DECRYPT_MODE, originalKey);
-                //encrypting
-                Cipher aesEncrypting = Cipher.getInstance("AES");
-                aesEncrypting.init(Cipher.ENCRYPT_MODE, originalKey);
-                //finish initial read
-                String message = readEncryptedString(aesDecrypting, in);
-
-                Client client;
-                //TODO metoda, registrace nového klienta
-                if (message.contains("NEW")) {
-                    String[] parsedMessage = message.split(";");
-
-                    Agent agent = Agent.valueOf(parsedMessage[1]);
-                    long availableResources = Long.parseLong(parsedMessage[2]);
-                    String id = String.valueOf(UUID.randomUUID());
-                    List<String> queues = readEncryptedList(aesDecrypting, in);
-
-                    client = new Client(id, agent, availableResources, ClientStatus.ACTIVE, new Date(), new ArrayList<>(), queues);
-                    clients.put(id, client);
-                    //send id to client
-                    sendEncryptedMessage(aesEncrypting, out, client.getId().getBytes(StandardCharsets.UTF_8));
-                } else {
-                    //ID;resources
-                    //TODO na klientovy
-                    //mesage contains id
-                    message = readEncryptedString(aesDecrypting, in);
-                    String[] parsedMessage = message.split(";");
-                    String id = parsedMessage[0];
-                    String availableResources = parsedMessage[1];
-
-                    client = clients.get(id);
-                    client.setAvailableResources(Long.parseLong(availableResources));
-                }
-                Task givenTask = null;
-                try {
-                    //mutex??
-                    givenTask = selectTaskAndRegisterIt(client);
-                    //zip file and send it through channel
-
-                    FileOutputStream fos = new FileOutputStream(givenTask.getPathToSourceDirectory() + ".zip");
-                    ZipOutputStream zipOut = new ZipOutputStream(fos);
-
-                    File fileToZip = new File(givenTask.getPathToSourceDirectory());
-                    Persistence.zipFile(fileToZip, fileToZip.getName(), zipOut);
-                    zipOut.close();
-                    fos.close();
-
-                    //send task to client
-                    // out.write();
-                } catch (Exception e) {
-                    if (givenTask != null) {
-                        //reschedule it
-                        givenTask.setStatus(TaskStatus.SCHEDULED);
+                    try {
+                        socket.setTcpNoDelay(true);
+                    } catch (SocketException e) {
+                        throw new RuntimeException(e);
                     }
-                }
+                    try (DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
+                        InputStream in = socket.getInputStream();
+                        byte[] encryptedKey = in.readNBytes(256);
 
-                //validate capacity
+                        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+                        cipher.init(Cipher.PRIVATE_KEY, authorization.getServerPrivateKey());
+                        byte[] decryptedKey = cipher.doFinal(encryptedKey);
 
-                /*
-                for (int i = 0; i < 1000; i--) {
-                    byte[] messageToSend = ("Ahoj"+i).getBytes(StandardCharsets.UTF_8);
+                        //decrypting
+                        SecretKey originalKey = new SecretKeySpec(decryptedKey, 0, decryptedKey.length, "AES");
+                        Cipher aesDecrypting = Cipher.getInstance("AES");
+                        aesDecrypting.init(Cipher.DECRYPT_MODE, originalKey);
+                        //encrypting
+                        Cipher aesEncrypting = Cipher.getInstance("AES");
+                        aesEncrypting.init(Cipher.ENCRYPT_MODE, originalKey);
+                        //finish initial read
+                        String message = readEncryptedString(aesDecrypting, in);
 
-                    sendEncryptedMessage(aesEncrypting, out, messageToSend);
-                    System.out.println(message);
-                }
+                        Client client;
+                        //TODO metoda, registrace nového klienta
+                        if (message.contains("NEW")) {
+                            client = registerNewClient(out, in, aesDecrypting, aesEncrypting, message);
+                        } else {
+                            client = getExistingClientOrCreateNew(out, in, aesDecrypting, aesEncrypting, message);
+                        }
+                        Task givenTask = null;
+                        try {
+                            //mutex??
+                            givenTask = selectTaskAndRegisterIt(client, guiToRefresh);
+                            //no task? return
+                            if (givenTask == null) {
+                                sendEncryptedMessage(aesEncrypting, out, "NO_TASK".getBytes(StandardCharsets.UTF_8));
+                                return;
+                            } else {
+                                sendEncryptedMessage(aesEncrypting, out, givenTask.getId().getBytes(StandardCharsets.UTF_8));
+                            }
 
-                 */
+                            File zipFile = new File(givenTask.getPathToZipFile());
+                            long remainingLength = zipFile.length();
+                            int readLength = 2048;
+                            try (FileInputStream fis = new FileInputStream(zipFile)) {
+                                while (remainingLength > 0) {
 
-                //*    CipherInputStream aesCipherInputStream = new CipherInputStream(socket.getInputStream(), aesDecrypting);
+                                    if (readLength > remainingLength) {
+                                        readLength = (int) remainingLength;
+                                    }
+                                    //encrypt
+                                    byte[] encrypted = aesEncrypting.doFinal(fis.readNBytes(readLength));
 
+                                    long encryptedLength = encrypted.length;
+                                    //send size
+                                    sendEncryptedMessage(aesEncrypting, out, Long.toString(encryptedLength).getBytes(StandardCharsets.UTF_8));
+                                    //send bytes
+                                    out.write(encrypted);
 
-                //fake wrapper for output stream - as cipher stream won't actually send when flushed.
-                //  NotClosingOutputStream notClosingOutputStream = new NotClosingOutputStream(socket.getOutputStream());
-                //*    CipherOutputStream AESoutStream = new CipherOutputStream(socket.getOutputStream(), aesEncrypting);
+                                    remainingLength -= readLength;
+                                }
+                                //send 0 to signalize we are done
+                                sendEncryptedMessage(aesEncrypting, out, Long.toString(0).getBytes(StandardCharsets.UTF_8));
+                            }
+                            //    int length = fis.get
+                            //    byte buffer
 
-                //end of symetric key exchange
+                        } catch (Exception e) {
+                            if (givenTask != null) {
+                                //reschedule it
+                                givenTask.setStatus(TaskStatus.SCHEDULED);
+                            }
+                        }
 
-                //send response
-                //  AESoutStream.write("navázáno spojení".getBytes(StandardCharsets.UTF_8));
-                //  AESoutStream.flush();
-                //  AESoutStream.close();
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchPaddingException | InvalidKeyException e) {
-                throw new RuntimeException(e);
-                    /*
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (NoSuchPaddingException | InvalidKeyException e) {
+                        throw new RuntimeException(e);
+                    } catch (IllegalBlockSizeException e) {
+                        throw new RuntimeException(e);
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new RuntimeException(e);
+                    } catch (BadPaddingException e) {
+                        throw new RuntimeException(e);
+                    }
                 });
-
-                     */
-            } catch (IllegalBlockSizeException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            } catch (BadPaddingException e) {
-                throw new RuntimeException(e);
             }
-            /*
         });
+    }
 
-             */
+    private Client getExistingClientOrCreateNew(DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, String message) throws IllegalBlockSizeException, BadPaddingException, IOException {
+        Client client;
+        String[] parsedMessage = message.split(";");
+        String id = parsedMessage[0];
+        long availableResources = Long.parseLong(parsedMessage[1]);
+
+        client = clients.get(id);
+        if (client == null) {
+            id = String.valueOf(UUID.randomUUID());
+            //send id
+            sendEncryptedMessage(aesEncrypting, out, id.getBytes(StandardCharsets.UTF_8));
+
+            Agent agent = Agent.valueOf(parsedMessage[2]);
+            //wait for queues
+            List<String> queues = readEncryptedList(aesDecrypting, in);
+
+            client = new Client(id, agent, availableResources, ClientStatus.ACTIVE, new Date(), new ArrayList<>(), queues);
+            clients.put(id, client);
+        } else {
+            sendEncryptedMessage(aesEncrypting, out, "ACK".getBytes(StandardCharsets.UTF_8));
+            client.setAvailableResources(availableResources);
         }
+        return client;
+    }
+
+    private Client registerNewClient(DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, String message) throws IOException, IllegalBlockSizeException, BadPaddingException {
+        Client client;
+        String[] parsedMessage = message.split(";");
+
+        Agent agent = Agent.valueOf(parsedMessage[1]);
+        long availableResources = Long.parseLong(parsedMessage[2]);
+        String id = String.valueOf(UUID.randomUUID());
+        List<String> queues = readEncryptedList(aesDecrypting, in);
+
+        client = new Client(id, agent, availableResources, ClientStatus.ACTIVE, new Date(), new ArrayList<>(), queues);
+        clients.put(id, client);
+        //send id to client
+        sendEncryptedMessage(aesEncrypting, out, client.getId().getBytes(StandardCharsets.UTF_8));
+        return client;
     }
 
     private byte[] readBytesUntilStop(InputStream cipherInputStream, char stopSymbol) throws IOException {
@@ -236,7 +266,7 @@ public class Scheduler {
         return Base64.getEncoder().encodeToString(cipherText);
     }
 
-    private void sendEncryptedMessage(Cipher aesEncrypting, DataOutputStream out, byte[] messageToSend) throws IllegalBlockSizeException, BadPaddingException, IOException {
+    public void sendEncryptedMessage(Cipher aesEncrypting, DataOutputStream out, byte[] messageToSend) throws IllegalBlockSizeException, BadPaddingException, IOException {
         String encrypted = encrypt(messageToSend, aesEncrypting);
         String withStop = encrypted + STOP_SYMBOL;
 
@@ -285,22 +315,21 @@ public class Scheduler {
                 .toList();
     }
 
-    private synchronized Task selectTaskAndRegisterIt(Client client) {
+    private synchronized Task selectTaskAndRegisterIt(Client client, ApplicationController guiToRefresh) {
         List<String> subscribedQueues = client.getSubscribedQueues();
         //if client does not specify queues, subscribe to all
-        if (subscribedQueues == null || subscribedQueues.isEmpty()) {
+        if (subscribedQueues == null || subscribedQueues.isEmpty() || subscribedQueues.get(0).equals("")) {
             subscribedQueues = queueMap.keySet().stream().toList();
         }
 
         List<String> subscribedQueuesFinal = subscribedQueues;
 
         Collection<Queue> queues = queueMap.values();
-        //get only queues that client contains, order them by priority
+        //get only queues that client contains, are of his agent, order them by priority
         List<Queue> subscribedNotIteratedQueues = new ArrayList<>(queues.stream().
-                filter((q) -> subscribedQueuesFinal.contains(q.getName()))
+                filter((q) -> subscribedQueuesFinal.contains(q.getName()) && q.getAgents().contains(client.getAgent()))
                 .sorted(Comparator.comparingInt(Queue::getPriority).reversed())
                 .toList());
-
         //if we have no queue
         if (subscribedNotIteratedQueues.isEmpty()) {
             return null;
@@ -327,8 +356,9 @@ public class Scheduler {
             }
 
             Task task = tasks.remove();
-            task.setStatus(TaskStatus.SCHEDULED);
+            task.setStatus(TaskStatus.RUNNING);
             client.getWorkingOnTasks().add(task);
+            Platform.runLater(guiToRefresh::refreshTaskList);
 
             return task;
         }

@@ -16,7 +16,10 @@ public class Task {
     private String pathToExecutable;
     private List<String> pathToResults;
     private List<String> parameters;
+    @JsonIgnore
     private String pathToSourceDirectory;
+    @JsonIgnore
+    private String pathToZipFile;
     private int from;
 
     private int to;
@@ -147,6 +150,14 @@ public class Task {
         this.clientWorkingOnThisTask = clientWorkingOnThisTask;
     }
 
+    public String getPathToZipFile() {
+        return pathToZipFile;
+    }
+
+    public void setPathToZipFile(String pathToZipFile) {
+        this.pathToZipFile = pathToZipFile;
+    }
+
     public Task(@JsonProperty("cost") long cost, @JsonProperty("name") String name,
                 @JsonProperty("pathToExecutable") String pathToExecutable, @JsonProperty("pathToResults") List<String> pathToResults,
                 @JsonProperty("timeout") long timeoutInMillis, @JsonProperty("priority") int priority, @JsonProperty("queue") String queueName) {
@@ -160,6 +171,6 @@ public class Task {
 
         this.id = UUID.randomUUID().toString();
 
-        this.status = TaskStatus.SCHEDULED;
+        this.status = TaskStatus.UPLOADING;
     }
 }

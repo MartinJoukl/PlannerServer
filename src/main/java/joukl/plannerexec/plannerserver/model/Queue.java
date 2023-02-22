@@ -5,6 +5,7 @@ import java.util.*;
 public class Queue {
     private String name;
     private List<Agent> agents;
+    //TODO vyřešit kapacitu
     private int capacity;
     private PriorityQueue<Task> tasks = new PriorityQueue<>(Comparator.comparingInt(Task::getPriority).reversed());
     private int priority;

@@ -4,13 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3537eab3-212d-4914-9401-bfe3598ee84e" name="Changes" comment="manual cipher">
+    <list default="true" id="3537eab3-212d-4914-9401-bfe3598ee84e" name="Changes" comment="Communication">
+      <change afterPath="$PROJECT_DIR$/storage/tasks/1a453b5c-7e58-4488-b9e9-2a6141850e3c.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/25895d83-f15f-45fb-8cf3-485d410f2f4e.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/28252f01-dba4-4474-a080-b5e98647292c.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/2e5e3ac0-a9c7-4430-923d-243e13c0562e.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/5424ee49-6dc0-4767-a280-4821fa0dca44.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/5df300ca-e607-46de-a0b6-a114df98d388.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/62e90d12-98ba-4253-8d6a-5e11afc16399.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/68f8b8dd-08b8-43cd-8d9a-c675537c50c6.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/71c6f02a-4dfa-4911-af2f-21a56ed1c5f8.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/96d06dda-2fc8-42dd-ba78-ffc57f5794c0.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/cc65e0b5-d3ab-45d7-b171-acbac55db3d6.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/f4ca12e6-4793-4406-a936-49a372b50971.zip" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Client.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Persistence.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Persistence.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Queue.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Queue.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/TaskStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/TaskStatus.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -59,7 +71,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/joukl/IdeaProjects/PlannerServer&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/joukl/IdeaProjects/PlannerClient&quot;,
     &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -76,6 +88,9 @@
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="joukl.plannerexec.plannerserver.model" />
+    </key>
+    <key name="IntroduceConstantDialog.RECENTS_KEY">
+      <recent name="joukl.plannerexec.plannerserver.viewModel.ApplicationController" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="joukl.plannerexec.plannerserver" />
@@ -128,7 +143,9 @@
       <workItem from="1676455313324" duration="3655000" />
       <workItem from="1676459503544" duration="33605000" />
       <workItem from="1676569357289" duration="12919000" />
-      <workItem from="1676718156731" duration="16011000" />
+      <workItem from="1676718156731" duration="22705000" />
+      <workItem from="1676815899326" duration="12722000" />
+      <workItem from="1677057499740" duration="9419000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1676142097953</created>
@@ -165,7 +182,14 @@
       <option name="project" value="LOCAL" />
       <updated>1676586561126</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Communication">
+      <created>1676746070428</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1676746070428</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -200,18 +224,10 @@
     <MESSAGE value="Socket" />
     <MESSAGE value="Socket 2" />
     <MESSAGE value="manual cipher" />
-    <option name="LAST_COMMIT_MESSAGE" value="manual cipher" />
+    <MESSAGE value="Communication" />
+    <option name="LAST_COMMIT_MESSAGE" value="Communication" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java</url>
-          <line>142</line>
-          <option name="timeStamp" value="21" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
     <pin-to-top-manager>
       <pinned-members>
         <PinnedItemInfo parentTag="sun.nio.ch.NioSocketImpl$1" memberName="this$0" />

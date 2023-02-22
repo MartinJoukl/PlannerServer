@@ -4,10 +4,9 @@ package joukl.plannerexec.plannerserver.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -35,20 +34,10 @@ public class Persistence {
             throw new RuntimeException(e);
         }
     }
-    public static void main(String[] args) throws IOException {
-        String sourceFile = "zipTest";
-        FileOutputStream fos = new FileOutputStream("dirCompressed.zip");
-        ZipOutputStream zipOut = new ZipOutputStream(fos);
-
-        File fileToZip = new File(sourceFile);
-        zipFile(fileToZip, fileToZip.getName(), zipOut);
-        zipOut.close();
-        fos.close();
-    }
 
     // Source:
     // https://www.baeldung.com/java-compress-and-uncompress
-    public static void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
+    public static void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException, IllegalBlockSizeException, BadPaddingException {
         if (fileToZip.isHidden()) {
             return;
         }

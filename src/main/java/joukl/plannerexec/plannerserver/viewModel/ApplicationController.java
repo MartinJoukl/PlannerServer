@@ -1,5 +1,6 @@
 package joukl.plannerexec.plannerserver.viewModel;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -17,7 +18,10 @@ import javafx.stage.Stage;
 import joukl.plannerexec.plannerserver.SchedulerGui;
 import joukl.plannerexec.plannerserver.model.*;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -25,6 +29,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.zip.ZipOutputStream;
+
+import static java.io.File.separator;
+import static joukl.plannerexec.plannerserver.model.Persistence.zipFile;
 
 public class ApplicationController {
     private final String KEY_ACTIVE = "Key in use";
@@ -94,10 +103,18 @@ public class ApplicationController {
         refreshTaskList();
     }
 
-    private void refreshTaskList() {
+    public void refreshTaskList() {
+        //get previously selected task
+        Task selectedTask = plannedJobsListView.getSelectionModel().getSelectedItem();
+
         taskList.clear();
         taskList.addAll(Scheduler.getScheduler().getTasksAsList());
+        plannedJobsListView.getSelectionModel().select(selectedTask);
         plannedJobsListView.refresh();
+
+        if (selectedTask != null) {
+            onSelectedTask(selectedTask);
+        }
     }
 
     private void refreshServerKeyStatus() {
@@ -139,13 +156,41 @@ public class ApplicationController {
                 return;
             }
             readTask.getQueue().getTasks().add(readTask);
-            showInfo("Task uploaded sucesfully", "Task uploaded successfully", "Task with name: " + readTask.getName() + " has been uploaded successfully to the queue: " + readTask.getQueue().getName() + ".");
+            showInfo("Task uploaded successfully", "Task uploaded successfully", "Task with name: "
+                    + readTask.getName() + " has been uploaded successfully to the queue: " + readTask.getQueue().getName() +
+                    ". Zip of the file will be transferred in background and scheduled when ready.");
             refreshTaskList();
+
+            //mixing view model and model :O
+            finishUploadOnBackgroundThread(readTask);
             selectTask(readTask);
         } catch (Exception ex) {
             showError("Unsuccessful parsing", "Configuration file was not parsed successfully", "Task parsing failed with following message: " + ex.getMessage());
         }
 
+    }
+
+    private void finishUploadOnBackgroundThread(Task readTask) {
+        new Thread(() -> {
+            try {
+                FileOutputStream fos = new FileOutputStream(Scheduler.PATH_TO_TASK_STORAGE + readTask.getId() + ".zip");
+                ZipOutputStream zipOut = new ZipOutputStream(fos);
+
+                File fileToZip = new File(readTask.getPathToSourceDirectory());
+                zipFile(fileToZip, readTask.getId(), zipOut);
+                zipOut.close();
+                fos.close();
+
+
+                readTask.setStatus(TaskStatus.SCHEDULED);
+                readTask.setPathToZipFile(Scheduler.PATH_TO_TASK_STORAGE + readTask.getId() + ".zip");
+                Platform.runLater(this::refreshTaskList);
+            } catch (IOException | IllegalBlockSizeException | BadPaddingException e) {
+                System.out.println("Uploading of zip of task failed - id: " + readTask.getId()); //just log, don't write anything else
+                readTask.setStatus(TaskStatus.FAILED);
+                Platform.runLater(this::refreshTaskList);
+            }
+        }).start();
     }
 
     private void selectTask(Task task) {
@@ -251,7 +296,7 @@ public class ApplicationController {
     }
 
     @FXML
-    public void onActionAddQueue(ActionEvent actionEvent) throws IOException, InterruptedException {
+    public void onActionAddQueue(ActionEvent actionEvent) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(SchedulerGui.class.getResource("add-queue-form-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         //scene.getStylesheets().add(Objects.requireNonNull(Scheduler.class.getResource("style.css")).toExternalForm());
@@ -282,8 +327,11 @@ public class ApplicationController {
     @FXML
     public void onActionStartListening(ActionEvent actionEvent) throws IOException {
         Scheduler scheduler = Scheduler.getScheduler();
+
         if (!scheduler.isListening()) {
-            scheduler.startListening();
+            scheduler.startListening(this);
+        } else {
+            scheduler.stopListening();
         }
 
         if (!scheduler.isListening()) {
