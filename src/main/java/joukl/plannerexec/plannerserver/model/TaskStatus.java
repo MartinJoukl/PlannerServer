@@ -5,6 +5,7 @@ public enum TaskStatus {
     SCHEDULED,
     RUNNING,
     FINISHED,
+    WARNING,
     DEACTIVATED,
     FAILED
 }
