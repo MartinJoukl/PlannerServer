@@ -4,20 +4,112 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3537eab3-212d-4914-9401-bfe3598ee84e" name="Changes" comment="add path to execute">
-      <change afterPath="$PROJECT_DIR$/storage/tasks/01799ccd-2a87-4237-b9b2-3cc2abf7ea60.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/tasks/05846205-2866-4958-b451-1b38ef3985e5.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/tasks/0b8f73bb-9dc9-491a-b6b9-36a7de277fa4.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/tasks/1951a078-74af-4e17-b12d-bdaddb38c8e7.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/tasks/23106e83-e23a-4a75-9349-b021dd1afe34.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/tasks/262e37b4-e0b8-4d3e-be82-9550f6757980.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/tasks/62b58525-5695-4df0-aac1-0f8fa856cdec.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/tasks/86f8f3ed-fe7c-43cc-b20c-f587fe0c71bd.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/tasks/a9b32975-132e-4474-9b1f-b54f4af3a5fe.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/tasks/cde0bced-c5cb-49c7-bdbf-1eee286fe490.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/tasks/e7680ce4-84b5-4cec-ab38-ec0f3be62258.zip" afterDir="false" />
+    <list default="true" id="3537eab3-212d-4914-9401-bfe3598ee84e" name="Changes" comment="add new taskStatus">
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/00b9c17e-8ac2-4d0b-b5b1-02536345e34b.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/00f81dd9-b6a6-4b5b-9eb7-c59722ee58da.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/068906fe-4d82-4cd1-9a54-02d1b3bbeb0e.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/0ef65c30-88a9-4a99-b1e0-3bf79f724ef3.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/15354dc0-17ab-4b25-b4da-f10d498c5ea3.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/1c477e76-17b7-4ae9-a6a3-90beb1298302.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/267523b2-5410-4122-8e67-5ac6c275da10.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/2752c43d-75e2-44c9-9ce7-877980fbd5f4.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/3017e904-f1cf-4e23-9fe2-11dff0acc730.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/40035723-4575-4bb4-8331-85b0c9a516e4.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/43a0b10e-2098-43ae-a532-951af6901b6d.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/5bc42ebf-04a6-4b87-ac52-f01b418c3193.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/5cd1ddea-a45a-4f21-9176-534f6b126792.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/6548e8b7-b3a5-4980-9cf7-28830f60dd70.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/689932a7-793b-401b-bbc1-458993b07696.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/787fd81f-6052-470a-bd9f-5e8b44d2aeeb.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/7e27957b-ee9f-4d28-acca-9b6ee9c04a2f.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/84e7435d-1314-47ff-b546-fa07dd1f63ac.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/8565ba4a-2aa4-4e0b-b3dd-c9b83b11e636.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/8793895e-e710-40ea-93f5-444cef070fef.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/8a714718-1c7f-412a-b28a-d4b4a221fb9e.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/8ea31aba-5af6-4e85-80a8-ac5c04412fd4.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/90f3ee3f-db21-4b7c-a478-79e1f596d2c8.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/94be835c-b009-4ba8-a9a2-2fdd93f708a0.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/974bc56d-3e0e-46cb-972b-14fd395885d8.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/98794d75-0a80-4e7a-b4e9-d2e3c3c6fa25.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/9acc91b0-8923-40f5-aa12-479d386d592e.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/9d1ddbc0-aa00-490e-8686-246fcb585b77.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/9e23b3b0-cdc6-40e1-88e1-150a8c867842.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/a47feef1-90ce-419f-a572-010f38c76cb7.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/ad5d9fbb-b84e-4f08-ac55-cb4a1714be83.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/c2fa89f9-2396-4cb3-a905-06b9740f1607.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/c416f7be-04c7-4754-9d26-a8e16f681cf3.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/c71340c1-2bec-4a85-8508-7b3b9c58f97d.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/c741fed3-fbdc-4baf-958f-ebe7c0ef3672.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/c8e25938-49af-490b-bd2c-a10bad963ba1.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/cead0a6c-35e2-47cd-9814-1fb558f7d305.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/cfd88ca1-8ce6-4f64-bcdd-b0406ce5b1d6.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/db24f8cd-18fd-4581-8587-09a1d5aa4dfc.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/e8b25b7a-dee2-44bb-a730-83be451dec71.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/ed98197c-b5b6-44b3-af2d-c817a34855d1.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/f54af542-e5ee-4627-8f78-8c0afb555d05.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/f7c2adb8-8599-45b3-a54f-a632a4f47945.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/fdd43e2b-2aa4-451d-850f-5597d0bf1a60.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/00b9c17e-8ac2-4d0b-b5b1-02536345e34b.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/00f81dd9-b6a6-4b5b-9eb7-c59722ee58da.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/068906fe-4d82-4cd1-9a54-02d1b3bbeb0e.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/09bf5d5b-4493-4725-a36e-78252d081663.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/09ef16d2-edd8-4161-9ec2-52a7dd4b5eab.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/0ef65c30-88a9-4a99-b1e0-3bf79f724ef3.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/15354dc0-17ab-4b25-b4da-f10d498c5ea3.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/1c477e76-17b7-4ae9-a6a3-90beb1298302.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/1d303c98-72eb-4e38-baac-08eb82df9f99.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/267523b2-5410-4122-8e67-5ac6c275da10.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/2752c43d-75e2-44c9-9ce7-877980fbd5f4.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/3017e904-f1cf-4e23-9fe2-11dff0acc730.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/40035723-4575-4bb4-8331-85b0c9a516e4.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/43a0b10e-2098-43ae-a532-951af6901b6d.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/44b2359e-7370-417c-a99d-840d964203b1.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/55a103bc-3490-40ba-960c-c70e565d2735.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/5bc42ebf-04a6-4b87-ac52-f01b418c3193.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/5cd1ddea-a45a-4f21-9176-534f6b126792.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/6123afc3-d3df-4d82-83b9-5a5601839328.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/6548e8b7-b3a5-4980-9cf7-28830f60dd70.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/689932a7-793b-401b-bbc1-458993b07696.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/769b77fd-d3f0-450a-a83c-8a3f382007c6.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/787fd81f-6052-470a-bd9f-5e8b44d2aeeb.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/79489511-3e6b-4c6a-b170-fd5bd3ebaa40.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/7e27957b-ee9f-4d28-acca-9b6ee9c04a2f.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/84e7435d-1314-47ff-b546-fa07dd1f63ac.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/8565ba4a-2aa4-4e0b-b3dd-c9b83b11e636.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/8793895e-e710-40ea-93f5-444cef070fef.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/8a714718-1c7f-412a-b28a-d4b4a221fb9e.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/8ea31aba-5af6-4e85-80a8-ac5c04412fd4.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/90f3ee3f-db21-4b7c-a478-79e1f596d2c8.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/934a2c2f-d7db-4543-895b-613e8af763c6.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/94be835c-b009-4ba8-a9a2-2fdd93f708a0.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/974bc56d-3e0e-46cb-972b-14fd395885d8.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/98794d75-0a80-4e7a-b4e9-d2e3c3c6fa25.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/9acc91b0-8923-40f5-aa12-479d386d592e.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/9d1ddbc0-aa00-490e-8686-246fcb585b77.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/9dca2d51-0e12-495e-ad6c-0823b1b137b7.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/9e23b3b0-cdc6-40e1-88e1-150a8c867842.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/a47feef1-90ce-419f-a572-010f38c76cb7.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/ad5d9fbb-b84e-4f08-ac55-cb4a1714be83.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/c2fa89f9-2396-4cb3-a905-06b9740f1607.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/c416f7be-04c7-4754-9d26-a8e16f681cf3.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/c71340c1-2bec-4a85-8508-7b3b9c58f97d.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/c741fed3-fbdc-4baf-958f-ebe7c0ef3672.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/c8e25938-49af-490b-bd2c-a10bad963ba1.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/cead0a6c-35e2-47cd-9814-1fb558f7d305.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/cfd88ca1-8ce6-4f64-bcdd-b0406ce5b1d6.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/d6d16a8c-edfa-490c-a5a4-7f4cf7b488c8.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/db24f8cd-18fd-4581-8587-09a1d5aa4dfc.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/e8b25b7a-dee2-44bb-a730-83be451dec71.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/ed98197c-b5b6-44b3-af2d-c817a34855d1.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/f54af542-e5ee-4627-8f78-8c0afb555d05.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/f7c2adb8-8599-45b3-a54f-a632a4f47945.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/f8d723b4-abb5-4794-98c6-ee8cd2aa5210.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/fdd43e2b-2aa4-451d-850f-5597d0bf1a60.zip" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/TaskStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/TaskStatus.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Client.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -141,7 +233,9 @@
       <workItem from="1676815899326" duration="12722000" />
       <workItem from="1677057499740" duration="20039000" />
       <workItem from="1677087090888" duration="126000" />
-      <workItem from="1677093349466" duration="2221000" />
+      <workItem from="1677093349466" duration="2263000" />
+      <workItem from="1677329296899" duration="20680000" />
+      <workItem from="1677514782700" duration="5339000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1676142097953</created>
@@ -199,7 +293,14 @@
       <option name="project" value="LOCAL" />
       <updated>1677087172750</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="add new taskStatus">
+      <created>1677104924283</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1677104924283</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -237,7 +338,8 @@
     <MESSAGE value="Communication" />
     <MESSAGE value="Send files" />
     <MESSAGE value="add path to execute" />
-    <option name="LAST_COMMIT_MESSAGE" value="add path to execute" />
+    <MESSAGE value="add new taskStatus" />
+    <option name="LAST_COMMIT_MESSAGE" value="add new taskStatus" />
   </component>
   <component name="XDebuggerManager">
     <pin-to-top-manager>

@@ -8,9 +8,7 @@ import java.util.UUID;
 
 public class Task {
     private String id;
-    private long cost;
-    @JsonIgnore
-    private Client clientWorkingOnThisTask;
+    private int cost;
     private String name;
 
     private String executePath;
@@ -43,7 +41,7 @@ public class Task {
         return cost;
     }
 
-    public void setCost(long cost) {
+    public void setCost(int cost) {
         this.cost = cost;
     }
 
@@ -143,14 +141,6 @@ public class Task {
         this.name = name;
     }
 
-    public Client getClientWorkingOnThisTask() {
-        return clientWorkingOnThisTask;
-    }
-
-    public void setClientWorkingOnThisTask(Client clientWorkingOnThisTask) {
-        this.clientWorkingOnThisTask = clientWorkingOnThisTask;
-    }
-
     public String getPathToZipFile() {
         return pathToZipFile;
     }
@@ -167,7 +157,7 @@ public class Task {
         this.executePath = executePath;
     }
 
-    public Task(@JsonProperty("cost") long cost, @JsonProperty("name") String name,
+    public Task(@JsonProperty("cost") int cost, @JsonProperty("name") String name,
                 @JsonProperty("commandToExecute") String commandToExecute, @JsonProperty("pathToResults") List<String> pathToResults,
                 @JsonProperty("timeout") long timeoutInMillis, @JsonProperty("priority") int priority, @JsonProperty("queue") String queueName, @JsonProperty("executePath") String executePath) {
         this.cost = cost;

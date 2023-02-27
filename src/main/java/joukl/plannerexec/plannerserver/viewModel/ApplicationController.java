@@ -181,7 +181,6 @@ public class ApplicationController {
                 zipOut.close();
                 fos.close();
 
-
                 readTask.setStatus(TaskStatus.SCHEDULED);
                 readTask.setPathToZipFile(Scheduler.PATH_TO_TASK_STORAGE + readTask.getId() + ".zip");
                 Platform.runLater(this::refreshTaskList);

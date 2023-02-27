@@ -24,6 +24,10 @@ public class Scheduler {
 
     public static final String PATH_TO_TASK_STORAGE = "storage" + separator + "tasks" + separator;
 
+    public static final String PATH_TO_TASK_RESULTS_STORAGE = "storage" + separator + "results" + separator;
+    private static final int NUMBER_OF_RETRY = 3;
+
+
     private Scheduler() {
     }
 
@@ -102,6 +106,7 @@ public class Scheduler {
                 final Socket socket;
                 try {
                     socket = serverSocket.accept();
+                    socket.setSoTimeout(200000); //2 s
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -114,8 +119,29 @@ public class Scheduler {
                     } catch (SocketException e) {
                         throw new RuntimeException(e);
                     }
+                    Cipher decrypting = null;
+                    Cipher encrypting = null;
+                    try {
+                        //decrypting
+                        decrypting = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+                        decrypting.init(Cipher.DECRYPT_MODE, authorization.getServerPrivateKey());
+
+                        //encrypting
+                        encrypting = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+                        encrypting.init(Cipher.ENCRYPT_MODE, authorization.getClientPublicKey());
+                    } catch (Exception ignored) {
+                        //... can't happen
+                    }
+
+
                     try (DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
                         InputStream in = socket.getInputStream();
+
+                        if (!validateClient(socket, decrypting, encrypting, out, in)) {
+                            return;
+                        }
+
+                        //read symmetric key
                         byte[] encryptedKey = in.readNBytes(256);
 
                         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
@@ -133,9 +159,21 @@ public class Scheduler {
                         String message = readEncryptedString(aesDecrypting, in);
 
                         Client client;
-                        //TODO metoda, registrace nového klienta
+
                         if (message.contains("NEW")) {
                             client = registerNewClient(out, in, aesDecrypting, aesEncrypting, message);
+                        } else if (message.contains("RESULT")) {
+                            client = getExistingClientOrCreateNew(out, in, aesDecrypting, aesEncrypting, message);
+                            //retrieve task if we found client (meaning it has tasks)
+                            if (client.getNumberOfTasks() > 0) {
+                                String taskId = readEncryptedString(aesDecrypting, in);
+                                Optional<Task> optTask = client.getWorkingOnTasks().stream()
+                                        .filter(t -> t.getId().equals(taskId))
+                                        .findAny();
+                                receiveResultWithRetry(socket, out, in, aesDecrypting, aesEncrypting, optTask, NUMBER_OF_RETRY);
+                                socket.close();
+                                return;
+                            }
                         } else {
                             client = getExistingClientOrCreateNew(out, in, aesDecrypting, aesEncrypting, message);
                         }
@@ -148,51 +186,32 @@ public class Scheduler {
                                 sendEncryptedMessage(aesEncrypting, out, "NO_TASK".getBytes(StandardCharsets.UTF_8));
                                 return;
                             } else {
-                                sendEncryptedMessage(aesEncrypting, out, givenTask.getId().getBytes(StandardCharsets.UTF_8));
-                            }
-
-                            File zipFile = new File(givenTask.getPathToZipFile());
-                            long remainingLength = zipFile.length();
-                            int readLength = 2048;
-                            try (FileInputStream fis = new FileInputStream(zipFile)) {
-                                while (remainingLength > 0) {
-
-                                    if (readLength > remainingLength) {
-                                        readLength = (int) remainingLength;
-                                    }
-                                    //encrypt
-                                    byte[] encrypted = aesEncrypting.doFinal(fis.readNBytes(readLength));
-
-                                    long encryptedLength = encrypted.length;
-                                    //send size
-                                    sendEncryptedMessage(aesEncrypting, out, Long.toString(encryptedLength).getBytes(StandardCharsets.UTF_8));
-                                    //send bytes
-                                    out.write(encrypted);
-
-                                    remainingLength -= readLength;
+                                sendEncryptedMessage(aesEncrypting, out, String.format("%s;%d", givenTask.getId(), givenTask.getCost()).getBytes(StandardCharsets.UTF_8));
+                                //check response for cost status
+                                String response = readEncryptedString(aesDecrypting, in);
+                                if (response.equals("COST_TOO_HIGH")) {
+                                    client.getWorkingOnTasks().remove(givenTask);
+                                    givenTask.setStatus(TaskStatus.SCHEDULED);
+                                    socket.close();
+                                    return;
+                                } else {
+                                    client.setAvailableResources(Integer.parseInt(response));
                                 }
-                                //send 0 to signalize we are done
-                                sendEncryptedMessage(aesEncrypting, out, Long.toString(0).getBytes(StandardCharsets.UTF_8));
                             }
-                            //    int length = fis.get
-                            //    byte buffer
+
+                            sendZipOfTask(out, aesEncrypting, givenTask);
 
                         } catch (Exception e) {
                             if (givenTask != null) {
                                 //reschedule it
+                                System.out.println("err1 " + e.getMessage());
                                 givenTask.setStatus(TaskStatus.SCHEDULED);
                             }
                         }
 
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (NoSuchPaddingException | InvalidKeyException e) {
-                        throw new RuntimeException(e);
-                    } catch (IllegalBlockSizeException e) {
-                        throw new RuntimeException(e);
-                    } catch (NoSuchAlgorithmException e) {
-                        throw new RuntimeException(e);
-                    } catch (BadPaddingException e) {
+                    } catch (IOException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException |
+                             NoSuchAlgorithmException | BadPaddingException e) {
+                        System.out.println("err2 " + e.getMessage());
                         throw new RuntimeException(e);
                     }
                 });
@@ -200,11 +219,79 @@ public class Scheduler {
         });
     }
 
+    private void receiveResultWithRetry(Socket socket, DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, Optional<Task> optTask, int numberOfRetry) throws IllegalBlockSizeException, BadPaddingException, IOException {
+        if (optTask.isPresent()) {
+            //TODO check status
+            Task relatedTask = optTask.get();
+            sendEncryptedMessage(aesEncrypting, out, "FOUND".getBytes(StandardCharsets.UTF_8));
+            for (int i = 0; i < numberOfRetry; i++) {
+                boolean gotResults = receiveTaskResults(aesDecrypting, in, relatedTask);
+                if (gotResults) {
+                    relatedTask.setStatus(TaskStatus.FINISHED);
+                    //send message to client
+                    sendEncryptedMessage(aesEncrypting, out, "FINISHED".getBytes(StandardCharsets.UTF_8));
+                    return;
+                } else if (i < numberOfRetry - 1) {
+                    sendEncryptedMessage(aesEncrypting, out, "FAILED".getBytes(StandardCharsets.UTF_8));
+                } else {
+                    sendEncryptedMessage(aesEncrypting, out, "FAILED_FINAL".getBytes(StandardCharsets.UTF_8));
+                }
+            }
+        } else {
+            //we did not find the task - return
+            System.out.println("no task found");
+            sendEncryptedMessage(aesEncrypting, out, "NOT_FOUND".getBytes(StandardCharsets.UTF_8));
+            socket.close();
+        }
+    }
+
+    private void sendZipOfTask(DataOutputStream out, Cipher aesEncrypting, Task givenTask) throws IOException, IllegalBlockSizeException, BadPaddingException {
+        File zipFile = new File(givenTask.getPathToZipFile());
+        long remainingLength = zipFile.length();
+        int readLength = 2048;
+        try (FileInputStream fis = new FileInputStream(zipFile)) {
+            while (remainingLength > 0) {
+
+                if (readLength > remainingLength) {
+                    readLength = (int) remainingLength;
+                }
+                //encrypt
+                byte[] encrypted = aesEncrypting.doFinal(fis.readNBytes(readLength));
+
+                long encryptedLength = encrypted.length;
+                //send size
+                sendEncryptedMessage(aesEncrypting, out, Long.toString(encryptedLength).getBytes(StandardCharsets.UTF_8));
+                //send bytes
+                out.write(encrypted);
+
+                remainingLength -= readLength;
+            }
+            //send 0 to signalize we are done
+            sendEncryptedMessage(aesEncrypting, out, Long.toString(0).getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    private static boolean validateClient(Socket socket, Cipher decrypting, Cipher encrypting, DataOutputStream out, InputStream in) throws IllegalBlockSizeException, BadPaddingException, IOException {
+        //respond to challenge
+        byte[] challenge = decrypting.doFinal(in.readNBytes(256));
+        out.write(encrypting.doFinal(challenge));
+        //send challenge
+        String uuId = UUID.randomUUID().toString();
+        out.write(encrypting.doFinal(uuId.getBytes(StandardCharsets.UTF_8)));
+        String response = new String(decrypting.doFinal(in.readNBytes(256)));
+        //validate response
+        if (!uuId.equals(response)) {
+            socket.close();
+            return false;
+        }
+        return true;
+    }
+
     private Client getExistingClientOrCreateNew(DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, String message) throws IllegalBlockSizeException, BadPaddingException, IOException {
         Client client;
         String[] parsedMessage = message.split(";");
         String id = parsedMessage[0];
-        long availableResources = Long.parseLong(parsedMessage[1]);
+        int availableResources = Integer.parseInt(parsedMessage[1]);
 
         client = clients.get(id);
         if (client == null) {
@@ -230,11 +317,11 @@ public class Scheduler {
         String[] parsedMessage = message.split(";");
 
         Agent agent = Agent.valueOf(parsedMessage[1]);
-        long availableResources = Long.parseLong(parsedMessage[2]);
+        int availableResources = Integer.parseInt(parsedMessage[2]);
         String id = String.valueOf(UUID.randomUUID());
         List<String> queues = readEncryptedList(aesDecrypting, in);
 
-        client = new Client(id, agent, availableResources, ClientStatus.ACTIVE, new Date(), new ArrayList<>(), queues);
+        client = new Client(id, agent, availableResources, ClientStatus.ACTIVE, new Date(), Collections.synchronizedList(new ArrayList<>()), queues);
         clients.put(id, client);
         //send id to client
         sendEncryptedMessage(aesEncrypting, out, client.getId().getBytes(StandardCharsets.UTF_8));
@@ -364,5 +451,20 @@ public class Scheduler {
         }
         //we have no task
         return null;
+    }
+
+    private boolean receiveTaskResults(Cipher aesDecrypting, InputStream in, Task task) throws IOException, IllegalBlockSizeException, BadPaddingException {
+        File resDir = new File(PATH_TO_TASK_RESULTS_STORAGE + task.getName());
+        resDir.mkdirs();
+        // we will get task - message it is id
+        try (FileOutputStream fos = new FileOutputStream(resDir.getPath() + separator + task.getId() + ".zip")) {
+            int receivedChunkSize = Integer.parseInt(readEncryptedString(aesDecrypting, in));
+            while (receivedChunkSize > 0) {
+                //decrypt and write
+                fos.write(aesDecrypting.doFinal(in.readNBytes(receivedChunkSize)));
+                receivedChunkSize = Integer.parseInt(readEncryptedString(aesDecrypting, in));
+            }
+        }
+        return true;
     }
 }

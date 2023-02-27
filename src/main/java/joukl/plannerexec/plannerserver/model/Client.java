@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Client {
 
-    public Client(String id, Agent agent, long availableResources, ClientStatus status, Date lastReply, List<Task> workingOnTasks, List<String> subscribedQueues) {
+    public Client(String id, Agent agent, int availableResources, ClientStatus status, Date lastReply, List<Task> workingOnTasks, List<String> subscribedQueues) {
         this.id = id;
         this.agent = agent;
         this.availableResources = availableResources;
@@ -17,7 +17,7 @@ public class Client {
 
     private String id;
     private Agent agent;
-    private long availableResources;
+    private int availableResources;
     private ClientStatus status;
     private Date lastReply;
     private List<Task> workingOnTasks;
@@ -39,11 +39,11 @@ public class Client {
         this.agent = agent;
     }
 
-    public long getAvailableResources() {
+    public int getAvailableResources() {
         return availableResources;
     }
 
-    public void setAvailableResources(long availableResources) {
+    public void setAvailableResources(int availableResources) {
         this.availableResources = availableResources;
     }
 
