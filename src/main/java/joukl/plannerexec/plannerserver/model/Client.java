@@ -20,8 +20,8 @@ public class Client {
     private int availableResources;
     private ClientStatus status;
     private Date lastReply;
-    private List<Task> workingOnTasks;
-    private List<String> subscribedQueues;
+    private volatile List<Task> workingOnTasks;
+    private volatile List<String> subscribedQueues;
 
     public String getId() {
         return id;

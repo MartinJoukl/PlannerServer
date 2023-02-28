@@ -1,0 +1,11 @@
+{
+    "name":"Sleep",
+    "cost":4,
+    "priority":1,
+    "executePath":"javaSleeper",
+    "commandToExecute":"java Sleeper",
+    "pathToResults":["javaSleeper/res","image/Yumechi.jpg"],
+    "parameters":["-PrvniParametr","druhyParametr","tretiParametr","....","atd.."],
+    "timeout": 1000000,
+    "queue":"a"
+}

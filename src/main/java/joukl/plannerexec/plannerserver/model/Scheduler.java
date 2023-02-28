@@ -35,9 +35,9 @@ public class Scheduler {
         return SCHEDULER;
     }
 
-    private Map<String, Client> clients = new HashMap<>();
-    private Map<String, Queue> queueMap = new ConcurrentHashMap<>();
-    private Authorization authorization = new Authorization();
+    private volatile Map<String, Client> clients = new HashMap<>();
+    private volatile Map<String, Queue> queueMap = new ConcurrentHashMap<>();
+    private volatile Authorization authorization = new Authorization();
     private ServerSocket serverSocket;
 
     private final char STOP_SYMBOL = 31;
@@ -170,7 +170,10 @@ public class Scheduler {
                                 Optional<Task> optTask = client.getWorkingOnTasks().stream()
                                         .filter(t -> t.getId().equals(taskId))
                                         .findAny();
-                                receiveResultWithRetry(socket, out, in, aesDecrypting, aesEncrypting, optTask, NUMBER_OF_RETRY);
+                                Task task = receiveResultWithRetry(socket, out, in, aesDecrypting, aesEncrypting, optTask);
+                                if(task != null && task.getStatus() != TaskStatus.FAILED){
+                                    Persistence.cleanUp(task);
+                                }
                                 socket.close();
                                 return;
                             }
@@ -219,22 +222,24 @@ public class Scheduler {
         });
     }
 
-    private void receiveResultWithRetry(Socket socket, DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, Optional<Task> optTask, int numberOfRetry) throws IllegalBlockSizeException, BadPaddingException, IOException {
+    private Task receiveResultWithRetry(Socket socket, DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, Optional<Task> optTask) throws IllegalBlockSizeException, BadPaddingException, IOException {
         if (optTask.isPresent()) {
             //TODO check status
             Task relatedTask = optTask.get();
             sendEncryptedMessage(aesEncrypting, out, "FOUND".getBytes(StandardCharsets.UTF_8));
-            for (int i = 0; i < numberOfRetry; i++) {
+            for (int i = 0; i < Scheduler.NUMBER_OF_RETRY; i++) {
                 boolean gotResults = receiveTaskResults(aesDecrypting, in, relatedTask);
                 if (gotResults) {
                     relatedTask.setStatus(TaskStatus.FINISHED);
                     //send message to client
                     sendEncryptedMessage(aesEncrypting, out, "FINISHED".getBytes(StandardCharsets.UTF_8));
-                    return;
-                } else if (i < numberOfRetry - 1) {
+                    return relatedTask;
+                } else if (i < Scheduler.NUMBER_OF_RETRY - 1) {
                     sendEncryptedMessage(aesEncrypting, out, "FAILED".getBytes(StandardCharsets.UTF_8));
                 } else {
                     sendEncryptedMessage(aesEncrypting, out, "FAILED_FINAL".getBytes(StandardCharsets.UTF_8));
+                    relatedTask.setStatus(TaskStatus.FAILED);
+                    return relatedTask;
                 }
             }
         } else {
@@ -242,7 +247,9 @@ public class Scheduler {
             System.out.println("no task found");
             sendEncryptedMessage(aesEncrypting, out, "NOT_FOUND".getBytes(StandardCharsets.UTF_8));
             socket.close();
+            return null;
         }
+        return null;
     }
 
     private void sendZipOfTask(DataOutputStream out, Cipher aesEncrypting, Task givenTask) throws IOException, IllegalBlockSizeException, BadPaddingException {
@@ -287,7 +294,7 @@ public class Scheduler {
         return true;
     }
 
-    private Client getExistingClientOrCreateNew(DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, String message) throws IllegalBlockSizeException, BadPaddingException, IOException {
+    private synchronized Client getExistingClientOrCreateNew(DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, String message) throws IllegalBlockSizeException, BadPaddingException, IOException {
         Client client;
         String[] parsedMessage = message.split(";");
         String id = parsedMessage[0];
@@ -295,16 +302,7 @@ public class Scheduler {
 
         client = clients.get(id);
         if (client == null) {
-            id = String.valueOf(UUID.randomUUID());
-            //send id
-            sendEncryptedMessage(aesEncrypting, out, id.getBytes(StandardCharsets.UTF_8));
-
-            Agent agent = Agent.valueOf(parsedMessage[2]);
-            //wait for queues
-            List<String> queues = readEncryptedList(aesDecrypting, in);
-
-            client = new Client(id, agent, availableResources, ClientStatus.ACTIVE, new Date(), new ArrayList<>(), queues);
-            clients.put(id, client);
+            client = reRegisterClient(out, in, aesDecrypting, aesEncrypting, parsedMessage, availableResources);
         } else {
             sendEncryptedMessage(aesEncrypting, out, "ACK".getBytes(StandardCharsets.UTF_8));
             client.setAvailableResources(availableResources);
@@ -312,7 +310,23 @@ public class Scheduler {
         return client;
     }
 
-    private Client registerNewClient(DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, String message) throws IOException, IllegalBlockSizeException, BadPaddingException {
+    private synchronized Client reRegisterClient(DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, String[] parsedMessage, int availableResources) throws IllegalBlockSizeException, BadPaddingException, IOException {
+        String id;
+        Client client;
+        id = String.valueOf(UUID.randomUUID());
+        //send id
+        sendEncryptedMessage(aesEncrypting, out, id.getBytes(StandardCharsets.UTF_8));
+
+        Agent agent = Agent.valueOf(parsedMessage[2]);
+        //wait for queues
+        List<String> queues = readEncryptedList(aesDecrypting, in);
+
+        client = new Client(id, agent, availableResources, ClientStatus.ACTIVE, new Date(), new ArrayList<>(), queues);
+        clients.put(id, client);
+        return client;
+    }
+
+    private synchronized Client registerNewClient(DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, String message) throws IOException, IllegalBlockSizeException, BadPaddingException {
         Client client;
         String[] parsedMessage = message.split(";");
 

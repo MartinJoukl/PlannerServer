@@ -7,10 +7,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static java.io.File.separator;
 public class Persistence {
 
     public static boolean saveBytesToFile(Path pathWithFileName, byte[] bytes) {
@@ -64,5 +68,10 @@ public class Persistence {
             zipOut.write(bytes, 0, length);
         }
         fis.close();
+    }
+
+    public static void cleanUp(Task task) throws IOException {
+        //Delete input data
+        Files.delete(Path.of(Scheduler.PATH_TO_TASK_STORAGE + task.getId() + ".zip"));
     }
 }
