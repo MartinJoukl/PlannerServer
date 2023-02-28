@@ -3,6 +3,7 @@ package joukl.plannerexec.plannerserver.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,7 +11,10 @@ public class Task {
     private String id;
     private int cost;
     private String name;
-
+    @JsonIgnore
+    private Client worker;
+    @JsonIgnore
+    private Date startRunningTime;
     private String executePath;
     private String commandToExecute;
     private List<String> pathToResults;
@@ -155,6 +159,22 @@ public class Task {
 
     public void setExecutePath(String executePath) {
         this.executePath = executePath;
+    }
+
+    public Date getStartRunningTime() {
+        return startRunningTime;
+    }
+
+    public Client getWorker() {
+        return worker;
+    }
+
+    public void setWorker(Client worker) {
+        this.worker = worker;
+    }
+
+    public void setStartRunningTime(Date startRunningTime) {
+        this.startRunningTime = startRunningTime;
     }
 
     public Task(@JsonProperty("cost") int cost, @JsonProperty("name") String name,

@@ -8,6 +8,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import joukl.plannerexec.plannerserver.model.Agent;
+import joukl.plannerexec.plannerserver.model.Client;
 import joukl.plannerexec.plannerserver.model.Queue;
 import joukl.plannerexec.plannerserver.model.Scheduler;
 

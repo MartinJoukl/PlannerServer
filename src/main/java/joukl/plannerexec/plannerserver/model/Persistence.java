@@ -9,12 +9,8 @@ import javax.crypto.IllegalBlockSizeException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import static java.io.File.separator;
 public class Persistence {
 
     public static boolean saveBytesToFile(Path pathWithFileName, byte[] bytes) {

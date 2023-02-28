@@ -13,9 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 import static java.io.File.separator;
 
@@ -26,18 +24,36 @@ public class Scheduler {
 
     public static final String PATH_TO_TASK_RESULTS_STORAGE = "storage" + separator + "results" + separator;
     private static final int NUMBER_OF_RETRY = 3;
+    private int TIMEOUT_DELAY = 2000; //2s
+
+    private ScheduledExecutorService watcher;
 
 
     private Scheduler() {
+    }
+
+    public void startWatcher() {
+        watcher = Executors.newScheduledThreadPool(1);
+        //periodically create new pooling threads
+        //refresh every 100 ms
+        //get gui controller to refresh - dirty
+        ApplicationController controler = ApplicationController.getGuiController();
+        watcher.scheduleAtFixedRate(() -> {
+            //refresh gui - dirty
+            Platform.runLater(controler::refreshClientList);
+            //TODO spadleTasky
+        }, 0, 100, TimeUnit.MILLISECONDS);
     }
 
     public static Scheduler getScheduler() {
         return SCHEDULER;
     }
 
-    private volatile Map<String, Client> clients = new HashMap<>();
-    private volatile Map<String, Queue> queueMap = new ConcurrentHashMap<>();
-    private volatile Authorization authorization = new Authorization();
+    private Map<String, Client> clients = new HashMap<>();
+    private Map<String, Queue> queueMap = new ConcurrentHashMap<>();
+    private Authorization authorization = new Authorization();
+
+    private List<Task> historicalTasks = Collections.synchronizedList(new LinkedList<>());
     private ServerSocket serverSocket;
 
     private final char STOP_SYMBOL = 31;
@@ -46,8 +62,6 @@ public class Scheduler {
     private static ExecutorService pool = Executors.newCachedThreadPool();
     //internal for
     //private PriorityQueue queuesPriority = new PriorityQueue<>(Comparator.comparingInt(Queue::getPriority));
-
-    //TODO metody plánování
 
     public Map<String, Client> getClients() {
         return clients;
@@ -81,7 +95,13 @@ public class Scheduler {
     public List<Task> getTasksAsList() {
         List<Task> tasks = new ArrayList<>();
         queueMap.forEach((key, queue) -> tasks.addAll(queue.getTasks()));
+        tasks.addAll(historicalTasks);
         return tasks;
+    }
+
+    public synchronized void transferTaskToHistoryRecords(Task task) {
+        task.getQueue().getTasks().remove(task);
+        historicalTasks.add(task);
     }
 
     public ServerSocket getServerSocket() {
@@ -103,19 +123,18 @@ public class Scheduler {
         pool.submit(() -> {
 
             while (!serverSocket.isClosed()) {
-                final Socket socket;
+                final Socket acceptedSocket;
                 try {
-                    socket = serverSocket.accept();
-                    socket.setSoTimeout(200000); //2 s
+                    acceptedSocket = serverSocket.accept();
+                    acceptedSocket.setSoTimeout(20000); //20 s
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
                 // start processing on another thread, accept more
 
                 pool.submit(() -> {
-
                     try {
-                        socket.setTcpNoDelay(true);
+                        acceptedSocket.setTcpNoDelay(true);
                     } catch (SocketException e) {
                         throw new RuntimeException(e);
                     }
@@ -130,14 +149,14 @@ public class Scheduler {
                         encrypting = Cipher.getInstance("RSA/ECB/PKCS1Padding");
                         encrypting.init(Cipher.ENCRYPT_MODE, authorization.getClientPublicKey());
                     } catch (Exception ignored) {
-                        //... can't happen
+                        //... can't happen... right?
                     }
 
 
-                    try (DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
-                        InputStream in = socket.getInputStream();
+                    try (DataOutputStream out = new DataOutputStream(acceptedSocket.getOutputStream())) {
+                        InputStream in = acceptedSocket.getInputStream();
 
-                        if (!validateClient(socket, decrypting, encrypting, out, in)) {
+                        if (!validateClient(acceptedSocket, decrypting, encrypting, out, in)) {
                             return;
                         }
 
@@ -166,15 +185,24 @@ public class Scheduler {
                             client = getExistingClientOrCreateNew(out, in, aesDecrypting, aesEncrypting, message);
                             //retrieve task if we found client (meaning it has tasks)
                             if (client.getNumberOfTasks() > 0) {
-                                String taskId = readEncryptedString(aesDecrypting, in);
+                                String[] taskMessage = readEncryptedString(aesDecrypting, in).split(";");
+                                String taskId = taskMessage[0];
+                                TaskStatus status = TaskStatus.valueOf(taskMessage[1]);
                                 Optional<Task> optTask = client.getWorkingOnTasks().stream()
                                         .filter(t -> t.getId().equals(taskId))
                                         .findAny();
-                                Task task = receiveResultWithRetry(socket, out, in, aesDecrypting, aesEncrypting, optTask);
-                                if(task != null && task.getStatus() != TaskStatus.FAILED){
-                                    Persistence.cleanUp(task);
+                                System.out.println("receiving task results... id: " + taskId);
+                                Task task = receiveResultWithRetry(acceptedSocket, out, in, aesDecrypting, aesEncrypting, optTask, status);
+                                if (task != null) {
+                                    if (task.getStatus() != TaskStatus.FAILED) {
+                                        Persistence.cleanUp(task);
+                                    }
+                                    transferTaskToHistoryRecords(task);
+                                    client.getWorkingOnTasks().remove(task);
                                 }
-                                socket.close();
+                                Platform.runLater(guiToRefresh::refreshTaskList);
+                                acceptedSocket.close();
+                                client.setLastReply(new Date());
                                 return;
                             }
                         } else {
@@ -187,6 +215,7 @@ public class Scheduler {
                             //no task? return
                             if (givenTask == null) {
                                 sendEncryptedMessage(aesEncrypting, out, "NO_TASK".getBytes(StandardCharsets.UTF_8));
+                                client.setLastReply(new Date());
                                 return;
                             } else {
                                 sendEncryptedMessage(aesEncrypting, out, String.format("%s;%d", givenTask.getId(), givenTask.getCost()).getBytes(StandardCharsets.UTF_8));
@@ -194,8 +223,10 @@ public class Scheduler {
                                 String response = readEncryptedString(aesDecrypting, in);
                                 if (response.equals("COST_TOO_HIGH")) {
                                     client.getWorkingOnTasks().remove(givenTask);
+                                    givenTask.setWorker(null);
                                     givenTask.setStatus(TaskStatus.SCHEDULED);
-                                    socket.close();
+                                    acceptedSocket.close();
+                                    client.setLastReply(new Date());
                                     return;
                                 } else {
                                     client.setAvailableResources(Integer.parseInt(response));
@@ -203,18 +234,21 @@ public class Scheduler {
                             }
 
                             sendZipOfTask(out, aesEncrypting, givenTask);
-
+                            client.setLastReply(new Date());
+                            acceptedSocket.close();
                         } catch (Exception e) {
                             if (givenTask != null) {
                                 //reschedule it
-                                System.out.println("err1 " + e.getMessage());
+                                System.out.println("Exception occured!! " + e.getMessage());
                                 givenTask.setStatus(TaskStatus.SCHEDULED);
+                                Platform.runLater(guiToRefresh::refreshTaskList);
                             }
                         }
 
                     } catch (IOException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException |
                              NoSuchAlgorithmException | BadPaddingException e) {
-                        System.out.println("err2 " + e.getMessage());
+                        System.out.println("Exception occured!! " + e.getMessage());
+                        Platform.runLater(guiToRefresh::refreshTaskList);
                         throw new RuntimeException(e);
                     }
                 });
@@ -222,15 +256,15 @@ public class Scheduler {
         });
     }
 
-    private Task receiveResultWithRetry(Socket socket, DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, Optional<Task> optTask) throws IllegalBlockSizeException, BadPaddingException, IOException {
+    private Task receiveResultWithRetry(Socket socket, DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, Optional<Task> optTask, TaskStatus statusInCaseOfSucc) throws IllegalBlockSizeException, BadPaddingException, IOException {
         if (optTask.isPresent()) {
-            //TODO check status
+
             Task relatedTask = optTask.get();
             sendEncryptedMessage(aesEncrypting, out, "FOUND".getBytes(StandardCharsets.UTF_8));
             for (int i = 0; i < Scheduler.NUMBER_OF_RETRY; i++) {
                 boolean gotResults = receiveTaskResults(aesDecrypting, in, relatedTask);
                 if (gotResults) {
-                    relatedTask.setStatus(TaskStatus.FINISHED);
+                    relatedTask.setStatus(statusInCaseOfSucc);
                     //send message to client
                     sendEncryptedMessage(aesEncrypting, out, "FINISHED".getBytes(StandardCharsets.UTF_8));
                     return relatedTask;
@@ -307,6 +341,7 @@ public class Scheduler {
             sendEncryptedMessage(aesEncrypting, out, "ACK".getBytes(StandardCharsets.UTF_8));
             client.setAvailableResources(availableResources);
         }
+        client.setLastReply(new Date());
         return client;
     }
 
@@ -339,6 +374,7 @@ public class Scheduler {
         clients.put(id, client);
         //send id to client
         sendEncryptedMessage(aesEncrypting, out, client.getId().getBytes(StandardCharsets.UTF_8));
+        client.setLastReply(new Date());
         return client;
     }
 
@@ -458,7 +494,9 @@ public class Scheduler {
 
             Task task = tasks.remove();
             task.setStatus(TaskStatus.RUNNING);
+            task.setStartRunningTime(new Date());
             client.getWorkingOnTasks().add(task);
+            task.setWorker(client);
             Platform.runLater(guiToRefresh::refreshTaskList);
 
             return task;
@@ -472,10 +510,11 @@ public class Scheduler {
         resDir.mkdirs();
         // we will get task - message it is id
         try (FileOutputStream fos = new FileOutputStream(resDir.getPath() + separator + task.getId() + ".zip")) {
-            int receivedChunkSize = Integer.parseInt(readEncryptedString(aesDecrypting, in));
+            long receivedChunkSize = Long.parseLong(readEncryptedString(aesDecrypting, in));
+
             while (receivedChunkSize > 0) {
                 //decrypt and write
-                fos.write(aesDecrypting.doFinal(in.readNBytes(receivedChunkSize)));
+                fos.write(aesDecrypting.doFinal(in.readNBytes((int) receivedChunkSize)));
                 receivedChunkSize = Integer.parseInt(readEncryptedString(aesDecrypting, in));
             }
         }

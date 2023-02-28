@@ -2,21 +2,22 @@ package joukl.plannerexec.plannerserver.viewModel;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import joukl.plannerexec.plannerserver.SchedulerGui;
 import joukl.plannerexec.plannerserver.model.*;
+import joukl.plannerexec.plannerserver.model.Queue;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -25,14 +26,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
+import java.util.*;
 import java.util.zip.ZipOutputStream;
 
-import static java.io.File.separator;
 import static joukl.plannerexec.plannerserver.model.Persistence.zipFile;
 
 public class ApplicationController {
@@ -44,6 +40,8 @@ public class ApplicationController {
     private final ObservableList<Queue> queueList = FXCollections.observableList(new ArrayList<>());
 
     private final ObservableList<Task> taskList = FXCollections.observableList(new ArrayList<>());
+
+    private static ApplicationController guiController; //Dirty
 
     @FXML
     private Label keyStatusLBL;
@@ -73,9 +71,19 @@ public class ApplicationController {
     private Label queueLBL;
     @FXML
     private Label listeningStatusLBL;
+    @FXML
+    private TableView<Client> clientTableView = new TableView<>();
+    @FXML
+    private TableColumn<Client, String> clientIdColumn;
+    @FXML
+    private TableColumn<Client, Number> taskCountColumn;
+    @FXML
+    private TableColumn<Client, String> statusColumn;
+    ObservableList<Client> clientList = FXCollections.observableList(new LinkedList<>());
 
     @FXML
     private void initialize() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
+        guiController = this;
         authorization = Scheduler.getScheduler().getAuthorization();
         privateKeyStatus.setValue(authorization.loadPrivateKeyFromRoot());
         privateKeyStatus.addListener((a) -> {
@@ -96,11 +104,39 @@ public class ApplicationController {
                 onSelectedTask(selectedTask);
             }
         });
-
+        clientTableView.setItems(clientList);
+        clientIdColumn.setCellValueFactory((client) -> client == null ? null : new SimpleStringProperty(client.getValue().getId()));
+        taskCountColumn.setCellValueFactory((client) -> client == null ? null : new SimpleIntegerProperty(client.getValue().getNumberOfTasks()));
+        statusColumn.setCellValueFactory((client) -> client == null ? null : new SimpleStringProperty(client.getValue().getStatus().name()));
         refreshQueueList();
         refreshServerKeyStatus();
         refreshClientKeyStatus();
         refreshTaskList();
+        refreshClientList();
+    }
+
+    public void refreshClientList() {
+        Map<String, Client> clientMap = Scheduler.getScheduler().getClients();
+        //it is removal, delete whole list
+        if (clientMap.size() < clientList.size()) {
+            clientList.clear();
+        }
+
+        Scheduler.getScheduler().getClients().forEach((key, value) -> {
+            if (!clientList.contains(value)) {
+                clientList.add(value);
+            }
+        });
+
+        //get previously selected worker
+        Client selectedClient = clientTableView.getSelectionModel().getSelectedItem();
+
+        clientTableView.getSelectionModel().select(selectedClient);
+        clientTableView.refresh();
+
+        if (selectedClient != null) {
+            onSelectClient(selectedClient);
+        }
     }
 
     public void refreshTaskList() {
@@ -207,6 +243,10 @@ public class ApplicationController {
         statusLBL.setText(task.getStatus().toString());
         queueLBL.setText(task.getQueue().getName());
         repeatsLBL.setText(String.valueOf(Math.abs(task.getFrom() - task.getTo())));
+    }
+
+    private void onSelectClient(Client client) {
+        //TODO
     }
 
     private static void showError(String title, String header, String contentText) {
@@ -338,5 +378,9 @@ public class ApplicationController {
         } else {
             listeningStatusLBL.setText("Listening on port: " + scheduler.getServerSocket().getLocalPort());
         }
+    }
+
+    public static ApplicationController getGuiController() {
+        return guiController;
     }
 }

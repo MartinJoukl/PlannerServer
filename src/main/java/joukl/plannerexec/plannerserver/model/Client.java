@@ -19,7 +19,7 @@ public class Client {
     private Agent agent;
     private int availableResources;
     private ClientStatus status;
-    private Date lastReply;
+    private volatile Date lastReply;
     private volatile List<Task> workingOnTasks;
     private volatile List<String> subscribedQueues;
 
