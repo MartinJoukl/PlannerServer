@@ -4,33 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3537eab3-212d-4914-9401-bfe3598ee84e" name="Changes" comment="Cleanup + example task">
-      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/0e8a28b2-d291-49a2-8078-ff7d836b3bba.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/4531f0ab-5f09-43f8-b16c-93f784147b31.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/57ede96b-ca02-45a4-8a15-78842300cd7c.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/59131dab-95e7-4f9c-b281-a36bd2fbda5e.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/618abe51-0a3f-47ce-a21f-da102b3ceba5.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/7cfe1b9d-5487-49ee-bbe5-b0d5c656128b.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/aef792d1-69d0-47f1-9ca4-c0699f471df2.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/b28320fa-ecb4-4a8e-9746-795b129738e0.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/b33fb379-4b70-4167-9eb7-86ce39a894f4.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/b748efbc-7bf9-4264-a0db-a423803ea42f.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/d1f535a6-d09f-496d-93a6-919f2dba530d.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/results/Akiba Meido Sensou/edddc52c-2c9e-4ba9-b45a-6a73487ee25d.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/tasks/05be93ad-e39c-413e-83f0-fbe8ddf478c8.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/tasks/25f1b58f-ba1c-417a-8610-bba3bdddd954.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/tasks/ff3379bd-6825-4f7f-a72c-9cd668648a6f.zip" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/SchedulerGui.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/SchedulerGui.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Persistence.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Persistence.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/AddQueueController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/AddQueueController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/TaskCellFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/TaskCellFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/joukl/plannerexec/plannerserver/application-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/joukl/plannerexec/plannerserver/application-view.fxml" afterDir="false" />
-    </list>
+    <list default="true" id="3537eab3-212d-4914-9401-bfe3598ee84e" name="Changes" comment="Client basic gui and watcher" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -158,7 +132,7 @@
       <workItem from="1677514782700" duration="8007000" />
       <workItem from="1677583857865" duration="1815000" />
       <workItem from="1677589589832" duration="3521000" />
-      <workItem from="1677605220664" duration="10385000" />
+      <workItem from="1677605220664" duration="10751000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1676142097953</created>
@@ -237,7 +211,14 @@
       <option name="project" value="LOCAL" />
       <updated>1677585620743</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Client basic gui and watcher">
+      <created>1677617499144</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1677617499144</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -279,7 +260,8 @@
     <MESSAGE value="something" />
     <MESSAGE value="Finish upload" />
     <MESSAGE value="Cleanup + example task" />
-    <option name="LAST_COMMIT_MESSAGE" value="Cleanup + example task" />
+    <MESSAGE value="Client basic gui and watcher" />
+    <option name="LAST_COMMIT_MESSAGE" value="Client basic gui and watcher" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
