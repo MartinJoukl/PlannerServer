@@ -3,11 +3,14 @@ package joukl.plannerexec.plannerserver.model;
 import java.util.*;
 
 public class Queue {
+    public static final Comparator<Task> TASK_COMPARATOR = Comparator.comparingInt(Task::getPriority).reversed();
     private String name;
     private List<Agent> agents;
     //TODO vyřešit kapacitu
     private int capacity;
-    private PriorityQueue<Task> tasks = new PriorityQueue<>(Comparator.comparingInt(Task::getPriority).reversed());
+    //Queue for running tasks
+    private PriorityQueue<Task> tasks = new PriorityQueue<>(TASK_COMPARATOR);
+    private List<Task> nonScheduledTasks = Collections.synchronizedList(new LinkedList<>());
     private int priority;
 
     public Queue(String name, List<Agent> agents,
@@ -57,5 +60,13 @@ public class Queue {
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public List<Task> getNonScheduledTasks() {
+        return nonScheduledTasks;
+    }
+
+    public void setNonScheduledTasks(List<Task> nonScheduledTasks) {
+        this.nonScheduledTasks = nonScheduledTasks;
     }
 }

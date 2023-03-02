@@ -24,25 +24,44 @@ public class Scheduler {
 
     public static final String PATH_TO_TASK_RESULTS_STORAGE = "storage" + separator + "results" + separator;
     private static final int NUMBER_OF_RETRY = 3;
-    private int TIMEOUT_DELAY = 2000; //2s
-
-    private ScheduledExecutorService watcher;
+    public static final long CLIENT_TIMEOUT_DEADLINE = 20000; //20s
+    public static final long CLIENT_NO_RESPONSE_TIME = CLIENT_TIMEOUT_DEADLINE / 2; //10s
+    private ScheduledExecutorService observer;
 
 
     private Scheduler() {
     }
 
-    public void startWatcher() {
-        watcher = Executors.newScheduledThreadPool(1);
+    public void startObserver() {
+        observer = Executors.newScheduledThreadPool(1);
         //periodically create new pooling threads
-        //refresh every 100 ms
+        //refresh every 200 ms
         //get gui controller to refresh - dirty
-        ApplicationController controler = ApplicationController.getGuiController();
-        watcher.scheduleAtFixedRate(() -> {
+        ApplicationController controller = ApplicationController.getGuiController();
+        observer.scheduleAtFixedRate(() -> {
             //refresh gui - dirty
-            Platform.runLater(controler::refreshClientList);
+            Platform.runLater(controller::refreshClientList);
             //TODO spadleTasky
-        }, 0, 100, TimeUnit.MILLISECONDS);
+            //TODO status klientů
+            List<Client> nonRespondingClients = clients.values().stream()
+                    .filter((client) -> new Date(client.getLastReply().getTime() + Scheduler.CLIENT_NO_RESPONSE_TIME).before(new Date()))
+                    .toList();
+            for (Client client : nonRespondingClients
+            ) {
+                client.setStatus(ClientStatus.NO_RESPONSE);
+                if (new Date(client.getLastReply().getTime() + Scheduler.CLIENT_TIMEOUT_DEADLINE).before(new Date())) {
+                    //remove client and add tasks to failed list
+                    for (Task toReAdd : client.getWorkingOnTasks()) {
+                        toReAdd.setStatus(TaskStatus.FAILED);
+                        historicalTasks.add(toReAdd);
+                    }
+
+                    client.getWorkingOnTasks().clear();
+                    clients.remove(client.getId());
+                }
+            }
+
+        }, 0, 200, TimeUnit.MILLISECONDS);
     }
 
     public static Scheduler getScheduler() {
@@ -53,7 +72,7 @@ public class Scheduler {
     private Map<String, Queue> queueMap = new ConcurrentHashMap<>();
     private Authorization authorization = new Authorization();
 
-    private List<Task> historicalTasks = Collections.synchronizedList(new LinkedList<>());
+    private final List<Task> historicalTasks = Collections.synchronizedList(new LinkedList<>());
     private ServerSocket serverSocket;
 
     private final char STOP_SYMBOL = 31;
@@ -91,16 +110,26 @@ public class Scheduler {
         this.authorization = authorization;
     }
 
-    //for gui
-    public List<Task> getTasksAsList() {
+    //for gui - returns running and active tasks
+    public List<Task> getActiveTasksAsList() {
         List<Task> tasks = new ArrayList<>();
         queueMap.forEach((key, queue) -> tasks.addAll(queue.getTasks()));
+        queueMap.forEach((key, queue) -> tasks.addAll(queue.getNonScheduledTasks()));
+        return tasks;
+    }
+
+
+    public List<Task> getAllTasksAsList() {
+        List<Task> tasks = new ArrayList<>();
+        queueMap.forEach((key, queue) -> tasks.addAll(queue.getTasks()));
+        queueMap.forEach((key, queue) -> tasks.addAll(queue.getNonScheduledTasks()));
         tasks.addAll(historicalTasks);
         return tasks;
     }
 
+
     public synchronized void transferTaskToHistoryRecords(Task task) {
-        task.getQueue().getTasks().remove(task);
+        task.getQueue().getNonScheduledTasks().remove(task);
         historicalTasks.add(task);
     }
 
@@ -114,6 +143,10 @@ public class Scheduler {
 
     public void stopListening() throws IOException {
         serverSocket.close();
+    }
+
+    public List<Task> getHistoricalTasks() {
+        return historicalTasks;
     }
 
     public void startListening(ApplicationController guiToRefresh) throws IOException {
@@ -150,6 +183,7 @@ public class Scheduler {
                         encrypting.init(Cipher.ENCRYPT_MODE, authorization.getClientPublicKey());
                     } catch (Exception ignored) {
                         //... can't happen... right?
+                        System.out.println("Ignored exception happened ... " + ignored.getMessage());
                     }
 
 
@@ -175,75 +209,31 @@ public class Scheduler {
                         Cipher aesEncrypting = Cipher.getInstance("AES");
                         aesEncrypting.init(Cipher.ENCRYPT_MODE, originalKey);
                         //finish initial read
-                        String message = readEncryptedString(aesDecrypting, in);
+                        String initialIdentification = readEncryptedString(aesDecrypting, in);
 
-                        Client client;
+                        Client client = null;
 
-                        if (message.contains("NEW")) {
-                            client = registerNewClient(out, in, aesDecrypting, aesEncrypting, message);
-                        } else if (message.contains("RESULT")) {
-                            client = getExistingClientOrCreateNew(out, in, aesDecrypting, aesEncrypting, message);
+                        //------------------ initial exchange finished ------------------
+
+                        if (initialIdentification.contains("NEW")) {
+                            client = registerNewClient(out, in, aesDecrypting, aesEncrypting, initialIdentification);
+                        } else if (initialIdentification.contains("RESULT")) {
+                            client = getExistingClientOrCreateNew(out, in, aesDecrypting, aesEncrypting, initialIdentification);
                             //retrieve task if we found client (meaning it has tasks)
                             if (client.getNumberOfTasks() > 0) {
-                                String[] taskMessage = readEncryptedString(aesDecrypting, in).split(";");
-                                String taskId = taskMessage[0];
-                                TaskStatus status = TaskStatus.valueOf(taskMessage[1]);
-                                Optional<Task> optTask = client.getWorkingOnTasks().stream()
-                                        .filter(t -> t.getId().equals(taskId))
-                                        .findAny();
-                                System.out.println("receiving task results... id: " + taskId);
-                                Task task = receiveResultWithRetry(acceptedSocket, out, in, aesDecrypting, aesEncrypting, optTask, status);
-                                if (task != null) {
-                                    if (task.getStatus() != TaskStatus.FAILED) {
-                                        Persistence.cleanUp(task);
-                                    }
-                                    transferTaskToHistoryRecords(task);
-                                    client.getWorkingOnTasks().remove(task);
-                                }
-                                Platform.runLater(guiToRefresh::refreshTaskList);
-                                acceptedSocket.close();
-                                client.setLastReply(new Date());
+                                findAndReceiveTask(guiToRefresh, acceptedSocket, out, in, aesDecrypting, aesEncrypting, client);
                                 return;
                             }
-                        } else {
-                            client = getExistingClientOrCreateNew(out, in, aesDecrypting, aesEncrypting, message);
-                        }
-                        Task givenTask = null;
-                        try {
-                            //mutex??
-                            givenTask = selectTaskAndRegisterIt(client, guiToRefresh);
-                            //no task? return
-                            if (givenTask == null) {
-                                sendEncryptedMessage(aesEncrypting, out, "NO_TASK".getBytes(StandardCharsets.UTF_8));
-                                client.setLastReply(new Date());
-                                return;
-                            } else {
-                                sendEncryptedMessage(aesEncrypting, out, String.format("%s;%d", givenTask.getId(), givenTask.getCost()).getBytes(StandardCharsets.UTF_8));
-                                //check response for cost status
-                                String response = readEncryptedString(aesDecrypting, in);
-                                if (response.equals("COST_TOO_HIGH")) {
-                                    client.getWorkingOnTasks().remove(givenTask);
-                                    givenTask.setWorker(null);
-                                    givenTask.setStatus(TaskStatus.SCHEDULED);
-                                    acceptedSocket.close();
-                                    client.setLastReply(new Date());
-                                    return;
-                                } else {
-                                    client.setAvailableResources(Integer.parseInt(response));
-                                }
-                            }
-
-                            sendZipOfTask(out, aesEncrypting, givenTask);
-                            client.setLastReply(new Date());
+                        } else if (initialIdentification.contains("EXCEPTION")) {
+                            client = getExistingClientOrCreateNew(out, in, aesDecrypting, aesEncrypting, initialIdentification);
+                            failTaskIfPresent(in, aesDecrypting, client);
+                            Platform.runLater(guiToRefresh::refreshTaskList);
                             acceptedSocket.close();
-                        } catch (Exception e) {
-                            if (givenTask != null) {
-                                //reschedule it
-                                System.out.println("Exception occured!! " + e.getMessage());
-                                givenTask.setStatus(TaskStatus.SCHEDULED);
-                                Platform.runLater(guiToRefresh::refreshTaskList);
-                            }
+                            return;
+                        } else {
+                            client = getExistingClientOrCreateNew(out, in, aesDecrypting, aesEncrypting, initialIdentification);
                         }
+                        findTaskAndGiveItToClient(guiToRefresh, acceptedSocket, out, in, aesDecrypting, aesEncrypting, client);
 
                     } catch (IOException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException |
                              NoSuchAlgorithmException | BadPaddingException e) {
@@ -254,6 +244,98 @@ public class Scheduler {
                 });
             }
         });
+    }
+
+    private void failTaskIfPresent(InputStream in, Cipher aesDecrypting, Client client) throws IOException, IllegalBlockSizeException, BadPaddingException {
+        String taskId = readEncryptedString(aesDecrypting, in);
+        Optional<Task> optTask = client.getWorkingOnTasks().stream()
+                .filter(t -> t.getId().equals(taskId))
+                .findAny();
+        if (optTask.isPresent()) {
+            Task task = optTask.get();
+            task.setStatus(TaskStatus.FAILED);
+            transferTaskToHistoryRecords(task);
+            client.getWorkingOnTasks().remove(task);
+        }
+    }
+
+    private void findTaskAndGiveItToClient(ApplicationController guiToRefresh, Socket acceptedSocket, DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, Client client) {
+        Task givenTask = null;
+        try {
+            //mutex??
+            givenTask = selectTaskAndRegisterIt(client, guiToRefresh);
+            //no task? return
+            if (givenTask == null) {
+                sendEncryptedMessage(aesEncrypting, out, "NO_TASK".getBytes(StandardCharsets.UTF_8));
+                client.setLastReply(new Date());
+                return;
+            } else {
+                sendEncryptedMessage(aesEncrypting, out, String.format("%s;%d", givenTask.getId(), givenTask.getCost()).getBytes(StandardCharsets.UTF_8));
+                //check response for cost status
+                String response = readEncryptedString(aesDecrypting, in);
+                if (response.equals("COST_TOO_HIGH")) {
+                    rescheduleTask(acceptedSocket, client, givenTask);
+                    return;
+                } else {
+                    client.setAvailableResources(Integer.parseInt(response));
+                }
+            }
+
+            sendZipOfTask(out, aesEncrypting, givenTask);
+            client.setLastReply(new Date());
+            acceptedSocket.close();
+        } catch (Exception e) {
+            if (givenTask != null) {
+                //Schedule task again
+                givenTask.setStatus(TaskStatus.SCHEDULED);
+                givenTask.getWorker().getWorkingOnTasks().remove(givenTask);
+                givenTask.setWorker(null);
+                if (!givenTask.getQueue().getTasks().contains(givenTask)) {
+                    transferTaskToPriorityQueue(givenTask);
+                }
+                Platform.runLater(guiToRefresh::refreshTaskList);
+            }
+        }
+    }
+
+    private static void rescheduleTask(Socket acceptedSocket, Client client, Task givenTask) throws IOException {
+        client.getWorkingOnTasks().remove(givenTask);
+        givenTask.setWorker(null);
+        givenTask.setStatus(TaskStatus.SCHEDULED);
+        transferTaskToPriorityQueue(givenTask);
+        acceptedSocket.close();
+        client.setLastReply(new Date());
+        return;
+    }
+
+    public static void transferTaskToPriorityQueue(Task givenTask) {
+        try {
+            givenTask.getQueue().getNonScheduledTasks().remove(givenTask);
+            givenTask.getQueue().getTasks().add(givenTask);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    private void findAndReceiveTask(ApplicationController guiToRefresh, Socket acceptedSocket, DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, Client client) throws IOException, IllegalBlockSizeException, BadPaddingException {
+        String[] taskMessage = readEncryptedString(aesDecrypting, in).split(";");
+        String taskId = taskMessage[0];
+        TaskStatus status = TaskStatus.valueOf(taskMessage[1]);
+        Optional<Task> optTask = client.getWorkingOnTasks().stream()
+                .filter(t -> t.getId().equals(taskId))
+                .findAny();
+        System.out.println("receiving task results... id: " + taskId);
+        Task task = receiveResultWithRetry(acceptedSocket, out, in, aesDecrypting, aesEncrypting, optTask, status);
+        if (task != null) {
+            if (task.getStatus() != TaskStatus.FAILED) {
+                Persistence.cleanUp(task);
+            }
+            transferTaskToHistoryRecords(task);
+            client.getWorkingOnTasks().remove(task);
+        }
+        Platform.runLater(guiToRefresh::refreshTaskList);
+        acceptedSocket.close();
+        client.setLastReply(new Date());
     }
 
     private Task receiveResultWithRetry(Socket socket, DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, Optional<Task> optTask, TaskStatus statusInCaseOfSucc) throws IllegalBlockSizeException, BadPaddingException, IOException {
@@ -365,8 +447,8 @@ public class Scheduler {
         Client client;
         String[] parsedMessage = message.split(";");
 
-        Agent agent = Agent.valueOf(parsedMessage[1]);
-        int availableResources = Integer.parseInt(parsedMessage[2]);
+        Agent agent = Agent.valueOf(parsedMessage[0]);
+        int availableResources = Integer.parseInt(parsedMessage[1]);
         String id = String.valueOf(UUID.randomUUID());
         List<String> queues = readEncryptedList(aesDecrypting, in);
 
@@ -464,7 +546,7 @@ public class Scheduler {
         Collection<Queue> queues = queueMap.values();
         //get only queues that client contains, are of his agent, order them by priority
         List<Queue> subscribedNotIteratedQueues = new ArrayList<>(queues.stream().
-                filter((q) -> subscribedQueuesFinal.contains(q.getName()) && q.getAgents().contains(client.getAgent()))
+                filter((q) -> subscribedQueuesFinal.contains(q.getName()) && q.getAgents().contains(client.getAgent()) && !q.getTasks().isEmpty())
                 .sorted(Comparator.comparingInt(Queue::getPriority).reversed())
                 .toList());
         //if we have no queue
@@ -479,27 +561,30 @@ public class Scheduler {
             subscribedNotIteratedQueues.removeIf((q) -> q.getPriority() == priority);
 
             // create common pool for task from queues
-            PriorityQueue<Task> tasks = new PriorityQueue<>(Comparator.comparingInt(Task::getPriority).reversed());
-            for (Queue iteratedQueue : queuesWithSamePriority
-            ) {
-                tasks.addAll(iteratedQueue.getTasks());
+            List<Task> pickCandidates = new LinkedList<>();
+            for (Queue queue : queuesWithSamePriority) {
+                Task potencialTask = queue.getTasks().peek();
+                if (potencialTask != null && potencialTask.getCost() <= client.getAvailableResources()) {
+                    pickCandidates.add(potencialTask);
+                }
             }
-            //remove all task that are not in SCHEDULED state or the cost is higher than available resources
-            tasks.removeIf((t) -> t.getStatus() != TaskStatus.SCHEDULED || t.getCost() > client.getAvailableResources());
-
-            //now we have pool with task, retrieve task with the highest priority (first) or return if we have no task
-            if (tasks.isEmpty()) {
+            //if cost of items in these queues would be too high, continue with another queues
+            if (pickCandidates.isEmpty()) {
                 continue;
             }
+            //get first element in sorted comparator according to comparator
+            Task winningTask = pickCandidates.stream().sorted(Queue.TASK_COMPARATOR).findFirst().get();
 
-            Task task = tasks.remove();
-            task.setStatus(TaskStatus.RUNNING);
-            task.setStartRunningTime(new Date());
-            client.getWorkingOnTasks().add(task);
-            task.setWorker(client);
+            Task givenTask = winningTask.getQueue().getTasks().remove();
+            winningTask.getQueue().getNonScheduledTasks().add(givenTask);
+
+            givenTask.setStatus(TaskStatus.RUNNING);
+            givenTask.setStartRunningTime(new Date());
+            client.getWorkingOnTasks().add(givenTask);
+            givenTask.setWorker(client);
             Platform.runLater(guiToRefresh::refreshTaskList);
 
-            return task;
+            return givenTask;
         }
         //we have no task
         return null;
@@ -518,6 +603,30 @@ public class Scheduler {
                 receivedChunkSize = Integer.parseInt(readEncryptedString(aesDecrypting, in));
             }
         }
+        return true;
+    }
+
+    public void deleteQueueByName(String queueName) {
+        Queue queue = queueMap.get(queueName);
+
+        if (queue != null && queue.getTasks().isEmpty()) {
+            queueMap.remove(queueName);
+        }
+    }
+
+    public boolean retryTask(Task task) {
+        if (task.getStatus() != TaskStatus.FAILED) {
+            return false;
+        }
+        Queue queue = this.queueMap.get(task.getQueue().getName());
+        if (queue == null) {
+            return false;
+        }
+
+        historicalTasks.remove(task);
+        queue.getTasks().add(task);
+
+        task.setStatus(TaskStatus.SCHEDULED);
         return true;
     }
 }

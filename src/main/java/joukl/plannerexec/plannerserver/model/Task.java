@@ -2,6 +2,8 @@ package joukl.plannerexec.plannerserver.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 
 import java.util.Date;
 import java.util.List;

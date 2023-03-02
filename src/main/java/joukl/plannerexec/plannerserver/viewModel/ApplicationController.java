@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -26,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.zip.ZipOutputStream;
 
@@ -51,6 +53,8 @@ public class ApplicationController {
     private ListView<Queue> queueListView;
     @FXML
     private ListView<Task> plannedJobsListView;
+    @FXML
+    private Button removeQueueButton;
     @FXML
     private Label jobIdLBL;
     @FXML
@@ -79,7 +83,27 @@ public class ApplicationController {
     private TableColumn<Client, Number> taskCountColumn;
     @FXML
     private TableColumn<Client, String> statusColumn;
-    ObservableList<Client> clientList = FXCollections.observableList(new LinkedList<>());
+    @FXML
+    private Label clientIdLbl;
+    @FXML
+    private Label clientResponseLbl;
+    @FXML
+    private Label clientResponseDeadlineLbl;
+    @FXML
+    private Label clientResponseStatusLbl;
+    @FXML
+    private Label clientAgentLbl;
+    @FXML
+    private Button retryJobButton;
+    @FXML
+    private Label scheduledTasksLbl;
+    @FXML
+    private Label runningTasksLbl;
+    @FXML
+    private Label reportingClientsLbl;
+    private final ObservableList<Client> clientList = FXCollections.observableList(new LinkedList<>());
+
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @FXML
     private void initialize() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
@@ -96,15 +120,31 @@ public class ApplicationController {
         queueListView.setItems(queueList);
 
         queueListView.setCellFactory(new QueueCellFactory());
+        queueListView.getSelectionModel().selectedItemProperty().addListener((event) -> {
+            Queue selectedQueue = queueListView.getSelectionModel().getSelectedItem();
+            removeQueueButton.setDisable(selectedQueue == null || selectedQueue.getTasks().size() != 0);
+        });
+
+        clientList.addListener((ListChangeListener<? super Client>) (c) -> {
+            reportingClientsLbl.setText(String.valueOf(clientList.size()));
+        });
+
         plannedJobsListView.setItems(taskList);
         plannedJobsListView.setCellFactory(new TaskCellFactory());
-        plannedJobsListView.setOnMouseClicked((mouseEvent) -> {
+        plannedJobsListView.getSelectionModel().selectedItemProperty().addListener((event) -> {
             Task selectedTask = plannedJobsListView.getSelectionModel().getSelectedItem();
             if (selectedTask != null) {
                 onSelectedTask(selectedTask);
             }
         });
         clientTableView.setItems(clientList);
+        clientTableView.getSelectionModel().selectedItemProperty().addListener((event) -> {
+            Client selectedClient = clientTableView.getSelectionModel().getSelectedItem();
+            if (selectedClient != null) {
+                onSelectClient(selectedClient);
+            }
+        });
+
         clientIdColumn.setCellValueFactory((client) -> client == null ? null : new SimpleStringProperty(client.getValue().getId()));
         taskCountColumn.setCellValueFactory((client) -> client == null ? null : new SimpleIntegerProperty(client.getValue().getNumberOfTasks()));
         statusColumn.setCellValueFactory((client) -> client == null ? null : new SimpleStringProperty(client.getValue().getStatus().name()));
@@ -115,7 +155,7 @@ public class ApplicationController {
         refreshClientList();
     }
 
-    public void refreshClientList() {
+    public synchronized void refreshClientList() {
         Map<String, Client> clientMap = Scheduler.getScheduler().getClients();
         //it is removal, delete whole list
         if (clientMap.size() < clientList.size()) {
@@ -143,14 +183,23 @@ public class ApplicationController {
         //get previously selected task
         Task selectedTask = plannedJobsListView.getSelectionModel().getSelectedItem();
 
+        List<Task> scheduledOrRunning = Scheduler.getScheduler().getActiveTasksAsList();
+        List<Task> historicalTasks = Scheduler.getScheduler().getHistoricalTasks();
+
         taskList.clear();
-        taskList.addAll(Scheduler.getScheduler().getTasksAsList());
+        taskList.addAll(scheduledOrRunning);
+        taskList.addAll(historicalTasks);
         plannedJobsListView.getSelectionModel().select(selectedTask);
         plannedJobsListView.refresh();
 
         if (selectedTask != null) {
             onSelectedTask(selectedTask);
         }
+        Queue selectedQueue = queueListView.getSelectionModel().getSelectedItem();
+        removeQueueButton.setDisable(selectedQueue == null || selectedQueue.getTasks().size() != 0);
+
+        scheduledTasksLbl.setText(String.valueOf(scheduledOrRunning.stream().filter(t -> t.getStatus() == TaskStatus.SCHEDULED).toList().size()));
+        runningTasksLbl.setText(String.valueOf(scheduledOrRunning.stream().filter(t -> t.getStatus() == TaskStatus.RUNNING).toList().size()));
     }
 
     private void refreshServerKeyStatus() {
@@ -191,10 +240,8 @@ public class ApplicationController {
                 showError("Task upload failed", "Queue doesn't exist", "Queue specified in config.json was not found.");
                 return;
             }
-            readTask.getQueue().getTasks().add(readTask);
-            showInfo("Task uploaded successfully", "Task uploaded successfully", "Task with name: "
-                    + readTask.getName() + " has been uploaded successfully to the queue: " + readTask.getQueue().getName() +
-                    ". Zip of the file will be transferred in background and scheduled when ready.");
+            readTask.getQueue().getNonScheduledTasks().add(readTask);
+            showInfo("Task uploaded successfully", "Task uploaded successfully", "Task with name: " + readTask.getName() + " has been uploaded successfully to the queue: " + readTask.getQueue().getName() + ". Zip of the file will be transferred in background and scheduled when ready.");
             refreshTaskList();
 
             //mixing view model and model :O
@@ -219,6 +266,11 @@ public class ApplicationController {
 
                 readTask.setStatus(TaskStatus.SCHEDULED);
                 readTask.setPathToZipFile(Scheduler.PATH_TO_TASK_STORAGE + readTask.getId() + ".zip");
+
+                //add task to queue
+                readTask.getQueue().getNonScheduledTasks().remove(readTask);
+                readTask.getQueue().getTasks().add(readTask);
+
                 Platform.runLater(this::refreshTaskList);
             } catch (IOException | IllegalBlockSizeException | BadPaddingException e) {
                 System.out.println("Uploading of zip of task failed - id: " + readTask.getId()); //just log, don't write anything else
@@ -243,10 +295,20 @@ public class ApplicationController {
         statusLBL.setText(task.getStatus().toString());
         queueLBL.setText(task.getQueue().getName());
         repeatsLBL.setText(String.valueOf(Math.abs(task.getFrom() - task.getTo())));
+
+        retryJobButton.setDisable(task.getStatus() != TaskStatus.FAILED);
     }
 
     private void onSelectClient(Client client) {
-        //TODO
+        clientIdLbl.setText(client.getId());
+
+        clientResponseLbl.setText(dateFormat.format(client.getLastReply()));
+
+        clientResponseDeadlineLbl.setText(dateFormat.format(new Date(client.getLastReply().getTime() + Scheduler.CLIENT_TIMEOUT_DEADLINE)));
+
+        clientResponseStatusLbl.setText(client.getStatus().name());
+
+        clientAgentLbl.setText(client.getAgent().getAgentName());
     }
 
     private static void showError(String title, String header, String contentText) {
@@ -257,7 +319,16 @@ public class ApplicationController {
         alert.show();
     }
 
-    public void onActionChangeJobStatus(ActionEvent actionEvent) {
+    public void onActionRetryJob(ActionEvent actionEvent) {
+        Task task = plannedJobsListView.getSelectionModel().getSelectedItem();
+        if (task != null) {
+            boolean succ = Scheduler.getScheduler().retryTask(task);
+            if (succ) {
+                refreshTaskList();
+            } else {
+                showError("Retrying of task failed", "Refreshing of task failed", "Retrying of task failed because queue associated with task is missing. ");
+            }
+        }
     }
 
     @FXML
@@ -361,6 +432,9 @@ public class ApplicationController {
                 queueList.add(value);
             }
         });
+
+        Queue selectedQueue = queueListView.getSelectionModel().getSelectedItem();
+        removeQueueButton.setDisable(selectedQueue == null || selectedQueue.getTasks().size() != 0);
     }
 
     @FXML
@@ -383,4 +457,12 @@ public class ApplicationController {
     public static ApplicationController getGuiController() {
         return guiController;
     }
+
+    public void onActionRemoveQueue(ActionEvent actionEvent) {
+        Queue selectedQueue = queueListView.getSelectionModel().getSelectedItem();
+        Scheduler.getScheduler().deleteQueueByName(selectedQueue.getName());
+
+        refreshQueueList();
+    }
+
 }

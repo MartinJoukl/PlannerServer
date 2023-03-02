@@ -49,22 +49,18 @@
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                        </rowConstraints>
                                        <children>
                                           <Label text="Worker id" />
-                                          <Label GridPane.rowIndex="2" />
-                                          <Label text="select a worker first.." GridPane.columnIndex="1" />
+                                          <Label fx:id="clientIdLbl" text="select a worker first.." GridPane.columnIndex="1" />
                                           <Label text="Last response time" GridPane.rowIndex="1" />
-                                          <Label text="select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                          <Label text="Response duration" GridPane.rowIndex="2" />
-                                          <Label text="select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                          <Label text="Status" GridPane.rowIndex="4" />
-                                          <Label text="select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                          <Label text="Agent" GridPane.rowIndex="5" />
-                                          <Label text="Deadline" GridPane.rowIndex="3" />
-                                          <Label text="select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                                          <Label text="select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                          <Label fx:id="clientResponseLbl" text="select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                          <Label text="Status" GridPane.rowIndex="3" />
+                                          <Label fx:id="clientResponseDeadlineLbl" text="select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                          <Label text="Agent" GridPane.rowIndex="4" />
+                                          <Label text="Deadline" GridPane.rowIndex="2" />
+                                          <Label fx:id="clientResponseStatusLbl" text="select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                          <Label fx:id="clientAgentLbl" text="select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="4" />
                                        </children>
                                        <VBox.margin>
                                           <Insets top="20.0" />
@@ -187,7 +183,7 @@
                                           <Label fx:id="costOfJobLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="9" />
                                           <Label text="Status" GridPane.rowIndex="10" />
                                           <Label fx:id="statusLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="10" />
-                                          <Button fx:id="planButton" alignment="CENTER" disable="true" mnemonicParsing="false" onAction="#onActionChangeJobStatus" prefHeight="40.0" prefWidth="200.0" text="Activate/Deactivate" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="12" GridPane.valignment="CENTER" />
+                                          <Button fx:id="retryJobButton" alignment="CENTER" disable="true" mnemonicParsing="false" onAction="#onActionRetryJob" prefHeight="40.0" prefWidth="200.0" text="Retry" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="12" GridPane.valignment="CENTER" />
                                           <Label text="Queue" GridPane.rowIndex="11" />
                                           <Label fx:id="queueLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="11" />
                                           <Label text="Job id" GridPane.rowIndex="2" />
@@ -287,7 +283,7 @@
                                                    </HBox.margin></Button>
                                              </children>
                                           </HBox>
-                                          <Button alignment="CENTER" disable="true" mnemonicParsing="false" prefHeight="40.0" prefWidth="200.0" styleClass="cancel" text="Remove queue" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="9" GridPane.valignment="CENTER">
+                                          <Button fx:id="removeQueueButton" alignment="CENTER" disable="true" mnemonicParsing="false" onAction="#onActionRemoveQueue" prefHeight="40.0" prefWidth="200.0" styleClass="cancel" text="Remove queue" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="9" GridPane.valignment="CENTER">
                                              <GridPane.margin>
                                                 <Insets />
                                              </GridPane.margin>
@@ -348,19 +344,19 @@
             <HBox prefHeight="100.0" prefWidth="240.0" spacing="10.0">
                <children>
                   <Label text="Number of sheduled tasks:" />
-                  <Label text="10" />
+                  <Label fx:id="scheduledTasksLbl" text="0" />
                </children>
             </HBox>
             <HBox prefHeight="100.0" prefWidth="240.0" spacing="10.0">
                <children>
                   <Label text="Number of running tasks:" />
-                  <Label text="10" />
+                  <Label fx:id="runningTasksLbl" text="0" />
                </children>
             </HBox>
             <HBox prefHeight="100.0" prefWidth="240.0" spacing="10.0">
                <children>
-                  <Label text="Number of reporting clients:" />
-                  <Label text="10" />
+                  <Label text="Number of reporting workers:" />
+                  <Label fx:id="reportingClientsLbl" text="0" />
                </children>
             </HBox>
          </children>
