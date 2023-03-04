@@ -2,8 +2,6 @@ package joukl.plannerexec.plannerserver.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 
 import java.util.Date;
 import java.util.List;
@@ -14,9 +12,12 @@ public class Task {
     private int cost;
     private String name;
     @JsonIgnore
-    private Client worker;
+    private Client client;
     @JsonIgnore
     private Date startRunningTime;
+
+    @JsonIgnore
+    private Date timeoutDeadline;
     private String executePath;
     private String commandToExecute;
     private List<String> pathToResults;
@@ -167,16 +168,24 @@ public class Task {
         return startRunningTime;
     }
 
-    public Client getWorker() {
-        return worker;
-    }
-
-    public void setWorker(Client worker) {
-        this.worker = worker;
-    }
-
     public void setStartRunningTime(Date startRunningTime) {
         this.startRunningTime = startRunningTime;
+    }
+
+    public Date getTimeoutDeadline() {
+        return timeoutDeadline;
+    }
+
+    public void setTimeoutDeadline(Date timeoutDeadline) {
+        this.timeoutDeadline = timeoutDeadline;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 
     public Task(@JsonProperty("cost") int cost, @JsonProperty("name") String name,

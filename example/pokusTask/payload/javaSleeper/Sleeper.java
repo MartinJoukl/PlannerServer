@@ -8,8 +8,9 @@ public class Sleeper {
     public static void main(String[] args) throws IOException {
         String result = Arrays.toString(args);
         result += "  <------- args";
+        int sleepingTime = Integer.parseInt(args[0]);
         try {
-            Thread.sleep(10000L);
+            Thread.sleep(sleepingTime);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

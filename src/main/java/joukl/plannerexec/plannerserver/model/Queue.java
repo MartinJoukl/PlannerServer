@@ -1,15 +1,20 @@
 package joukl.plannerexec.plannerserver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.*;
 
 public class Queue {
+    @JsonIgnore
     public static final Comparator<Task> TASK_COMPARATOR = Comparator.comparingInt(Task::getPriority).reversed();
     private String name;
     private List<Agent> agents;
     //TODO vyřešit kapacitu
     private int capacity;
     //Queue for running tasks
+    @JsonIgnore
     private PriorityQueue<Task> tasks = new PriorityQueue<>(TASK_COMPARATOR);
+    @JsonIgnore
     private List<Task> nonScheduledTasks = Collections.synchronizedList(new LinkedList<>());
     private int priority;
 
@@ -21,6 +26,8 @@ public class Queue {
         this.capacity = capacity;
         this.priority = priority;
     }
+
+    public Queue(){}
 
     public String getName() {
         return name;
@@ -62,6 +69,7 @@ public class Queue {
         this.priority = priority;
     }
 
+    //contains running and uploading tasks only
     public List<Task> getNonScheduledTasks() {
         return nonScheduledTasks;
     }

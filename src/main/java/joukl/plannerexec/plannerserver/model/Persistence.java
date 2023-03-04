@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
 public class Persistence {
 
     public static boolean saveBytesToFile(Path pathWithFileName, byte[] bytes) {
@@ -33,6 +34,22 @@ public class Persistence {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Configuration readApplicationConfiguration() {
+
+        File configFile = new File("config.json");
+        if (configFile.exists()) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                return mapper
+                        .readerFor(Configuration.class)
+                        .readValue(configFile);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
     }
 
     // Source:

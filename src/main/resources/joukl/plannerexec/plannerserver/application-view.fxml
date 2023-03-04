@@ -103,9 +103,10 @@
                                     <Label styleClass="heading" text="Reporting workers" />
                                     <TableView fx:id="clientTableView" VBox.vgrow="ALWAYS">
                                       <columns>
-                                        <TableColumn fx:id="clientIdColumn" editable="false" prefWidth="358.0" resizable="false" text="Worker ID" />
-                                        <TableColumn fx:id="taskCountColumn" editable="false" minWidth="0.0" prefWidth="191.0" resizable="false" text="Task count" />
-                                          <TableColumn fx:id="statusColumn" editable="false" minWidth="0.0" prefWidth="195.0" resizable="false" text="Status" />
+                                        <TableColumn fx:id="clientIdColumn" editable="false" prefWidth="310.0" resizable="false" text="Worker ID" />
+                                        <TableColumn fx:id="taskCountColumn" editable="false" minWidth="0.0" prefWidth="135.0" resizable="false" text="Task count" />
+                                          <TableColumn fx:id="availableResourcesColumn" editable="false" minWidth="0.0" prefWidth="162.0" resizable="false" text="Available resources" />
+                                          <TableColumn fx:id="statusColumn" editable="false" minWidth="0.0" prefWidth="166.0" resizable="false" text="Status" />
                                       </columns>
                                        <VBox.margin>
                                           <Insets top="20.0" />
@@ -159,7 +160,6 @@
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                           <RowConstraints minHeight="10.0" prefHeight="60.0" vgrow="SOMETIMES" />
                                       </rowConstraints>
                                        <children>
@@ -169,7 +169,6 @@
                                           <Label fx:id="taskPriorityLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="5" />
                                           <Label text="Arguments" GridPane.rowIndex="6" />
                                           <Label text="Results locations" GridPane.rowIndex="7" />
-                                          <Label text="Number of repeats" GridPane.rowIndex="8" />
                                           <ListView fx:id="argumentsListView" prefHeight="138.0" prefWidth="251.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                              <GridPane.margin>
                                                 <Insets bottom="10.0" top="10.0" />
@@ -178,18 +177,19 @@
                                              <GridPane.margin>
                                                 <Insets bottom="10.0" top="10.0" />
                                              </GridPane.margin></ListView>
-                                          <Label fx:id="repeatsLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="8" />
-                                          <Label text="Cost of job" GridPane.rowIndex="9" />
-                                          <Label fx:id="costOfJobLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="9" />
-                                          <Label text="Status" GridPane.rowIndex="10" />
-                                          <Label fx:id="statusLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="10" />
-                                          <Button fx:id="retryJobButton" alignment="CENTER" disable="true" mnemonicParsing="false" onAction="#onActionRetryJob" prefHeight="40.0" prefWidth="200.0" text="Retry" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="12" GridPane.valignment="CENTER" />
-                                          <Label text="Queue" GridPane.rowIndex="11" />
-                                          <Label fx:id="queueLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="11" />
-                                          <Label text="Job id" GridPane.rowIndex="2" />
+                                          <Label text="Cost of job" GridPane.rowIndex="8" />
+                                          <Label fx:id="costOfJobLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                                          <Label text="Status" GridPane.rowIndex="9" />
+                                          <Label fx:id="statusLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                                          <Button fx:id="retryJobButton" alignment="CENTER" disable="true" mnemonicParsing="false" onAction="#onActionRetryJob" prefHeight="40.0" prefWidth="200.0" text="Retry" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="11" GridPane.valignment="CENTER" />
+                                          <Label text="Queue" GridPane.rowIndex="10" />
+                                          <Label fx:id="queueLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                                          <Label text="Task id" GridPane.rowIndex="2" />
                                           <Label fx:id="jobIdLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                           <Label text="Task name" GridPane.rowIndex="4" />
                                           <Label fx:id="taskNameLBL" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                          <Label text="Task deadline" GridPane.rowIndex="3" />
+                                          <Label fx:id="taskDeadlineLbl" text="Select a task first.." GridPane.columnIndex="1" GridPane.rowIndex="3" />
                                        </children>
                                     </GridPane>
                                  </children>
@@ -257,11 +257,11 @@
                                           <Label text="Server private key" />
                                           <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" GridPane.columnIndex="1">
                                              <children>
-                                                <Button maxWidth="-Infinity" minHeight="40.0" mnemonicParsing="false" onAction="#onActionSelectPrivateKey" prefWidth="125.0" text="Load private key ..." />
+                                                <Button maxWidth="-Infinity" minHeight="40.0" mnemonicParsing="false" onAction="#onActionSelectPrivateKey" prefWidth="125.0" text="Load private key ..." textAlignment="CENTER" />
                                              </children>
                                           </HBox>
                                           <Label text="Server public key" GridPane.rowIndex="4" />
-                                          <Button mnemonicParsing="false" onAction="#onActionExportPublicKey" prefHeight="40.0" prefWidth="125.0" text="Export to file" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                          <Button mnemonicParsing="false" onAction="#onActionExportPublicKey" prefHeight="40.0" prefWidth="125.0" text="Export to file" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                              <GridPane.margin>
                                                 <Insets bottom="10.0" top="10.0" />
                                              </GridPane.margin>
@@ -270,14 +270,14 @@
                                              </padding>
                                           </Button>
                                           <Label text="Worker public key" GridPane.rowIndex="6" />
-                                          <Button mnemonicParsing="false" onAction="#onActionGeneratePrivateKey" prefHeight="40.0" prefWidth="125.0" text="Generate new" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                          <Button mnemonicParsing="false" onAction="#onActionGeneratePrivateKey" prefHeight="40.0" prefWidth="125.0" text="Generate new" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                              <GridPane.margin>
                                                 <Insets top="10.0" />
                                              </GridPane.margin>
                                           </Button>
                                           <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                              <children>
-                                                <Button mnemonicParsing="false" onAction="#onActionUploadWorkerKey" prefHeight="40.0" prefWidth="200.0" text="Upload worker public key ...">
+                                                <Button mnemonicParsing="false" onAction="#onActionUploadWorkerKey" prefHeight="40.0" prefWidth="200.0" text="Upload worker public key ..." textAlignment="CENTER">
                                                    <HBox.margin>
                                                       <Insets />
                                                    </HBox.margin></Button>

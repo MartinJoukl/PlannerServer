@@ -3,7 +3,6 @@ package joukl.plannerexec.plannerserver.viewModel;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
-import joukl.plannerexec.plannerserver.model.Queue;
 import joukl.plannerexec.plannerserver.model.Task;
 
 public class TaskCellFactory implements Callback<ListView<Task>, ListCell<Task>> {
@@ -17,7 +16,7 @@ public class TaskCellFactory implements Callback<ListView<Task>, ListCell<Task>>
                     setText(null);
                 } else {
                     setText("Name: " + task.getName() + ", id: " + task.getId() + ", status: " + task.getStatus() + ", queue: " + task.getQueue().getName() +
-                            ", priority: " + task.getPriority() + ", Worker id: " + (task.getWorker() == null ? "none" : task.getWorker().getId()));
+                            ", priority: " + task.getPriority() + ", Worker id: " + (task.getClient() == null ? "none" : task.getClient().getId()));
                 }
             }
         };

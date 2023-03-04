@@ -67,9 +67,6 @@ public class Authorization {
         saveKeyToStorage(SERVER_PRIVATE);
         saveKeyToStorage(SERVER_PUBLIC);
 
-        System.out.println("Private key format: " + serverPrivateKey.getFormat());
-
-        System.out.println("Public key format: " + serverPublicKey.getFormat());
         return true;
     }
 
@@ -84,7 +81,7 @@ public class Authorization {
         }
         saveKeyToStorage(CLIENT_PUBLIC);
 
-        System.out.println("Client public key format: " + clientPublicKey.getFormat());
+        //System.out.println("Client public key format: " + clientPublicKey.getFormat());
         return true;
     }
 
@@ -96,13 +93,6 @@ public class Authorization {
         serverPublicKey = keys.getPublic();
         saveKeyToStorage(SERVER_PRIVATE);
         saveKeyToStorage(SERVER_PUBLIC);
-
-
-        System.out.println("Private key format: " + serverPrivateKey.getFormat());
-// prints "Private key format: PKCS#8" on my machine
-
-        System.out.println("Public key format: " + serverPublicKey.getFormat());
-// prints "Public key format: X.509" on my machine
         return true;
     }
 

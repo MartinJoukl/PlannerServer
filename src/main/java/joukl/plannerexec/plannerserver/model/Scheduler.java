@@ -24,44 +24,78 @@ public class Scheduler {
 
     public static final String PATH_TO_TASK_RESULTS_STORAGE = "storage" + separator + "results" + separator;
     private static final int NUMBER_OF_RETRY = 3;
-    public static final long CLIENT_TIMEOUT_DEADLINE = 20000; //20s
-    public static final long CLIENT_NO_RESPONSE_TIME = CLIENT_TIMEOUT_DEADLINE / 2; //10s
-    private ScheduledExecutorService observer;
+    private long clientTimeoutDeadline = 20000; //20s
+    private long clientNoResponseTime = 2000; //2s
+    private long timeoutDelay = 2000; //2 s delay
+
+    private int port = 6660;
 
 
     private Scheduler() {
+        Configuration config = Persistence.readApplicationConfiguration();
+        if (config != null) {
+            timeoutDelay = config.getTaskTimeoutDelay();
+            clientTimeoutDeadline = config.getClientTimeoutDeadline();
+            clientNoResponseTime = config.getClientNoResponseTime();
+            port = config.getPort();
+            config.getQueues().forEach((q) -> queueMap.put(q.getName(), q));
+        }
     }
 
     public void startObserver() {
-        observer = Executors.newScheduledThreadPool(1);
+        ScheduledExecutorService observer = Executors.newScheduledThreadPool(1);
         //periodically create new pooling threads
         //refresh every 200 ms
         //get gui controller to refresh - dirty
         ApplicationController controller = ApplicationController.getGuiController();
         observer.scheduleAtFixedRate(() -> {
-            //refresh gui - dirty
-            Platform.runLater(controller::refreshClientList);
-            //TODO spadleTasky
-            //TODO status klientů
-            List<Client> nonRespondingClients = clients.values().stream()
-                    .filter((client) -> new Date(client.getLastReply().getTime() + Scheduler.CLIENT_NO_RESPONSE_TIME).before(new Date()))
-                    .toList();
-            for (Client client : nonRespondingClients
-            ) {
-                client.setStatus(ClientStatus.NO_RESPONSE);
-                if (new Date(client.getLastReply().getTime() + Scheduler.CLIENT_TIMEOUT_DEADLINE).before(new Date())) {
-                    //remove client and add tasks to failed list
-                    for (Task toReAdd : client.getWorkingOnTasks()) {
-                        toReAdd.setStatus(TaskStatus.FAILED);
-                        historicalTasks.add(toReAdd);
+            try {
+                //refresh gui - dirty
+                Platform.runLater(controller::refreshClientList);
+
+                checkForClientResponse(controller);
+                List<Task> activeTasks = getRunningTasksAsList();
+
+                for (Task activeTask : activeTasks
+                ) {
+                    boolean taskFailed = false;
+                    // minus for some reason
+                    if ((activeTask.getTimeoutDeadline() != null && new Date(System.currentTimeMillis() - timeoutDelay).after(activeTask.getTimeoutDeadline()))) {
+                        failTask(activeTask.getClient(), activeTask);
+                        //System.out.println("Task " + activeTask.getName() + ", id: " + activeTask.getId() + " has timed out!");
+                        taskFailed = true;
                     }
 
-                    client.getWorkingOnTasks().clear();
-                    clients.remove(client.getId());
+                    if (taskFailed) {
+                        Platform.runLater(controller::refreshTaskList);
+                    }
                 }
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
 
         }, 0, 200, TimeUnit.MILLISECONDS);
+    }
+
+    private void checkForClientResponse(ApplicationController controller) {
+        List<Client> nonRespondingClients = clients.values().stream()
+                .filter((client) -> new Date(client.getLastReply().getTime() + clientNoResponseTime).before(new Date()))
+                .toList();
+        for (Client client : nonRespondingClients
+        ) {
+            client.setStatus(ClientStatus.NO_RESPONSE);
+            if (new Date(client.getLastReply().getTime() + clientTimeoutDeadline).before(new Date())) {
+                //remove client and add tasks to failed list
+                for (Task toReAdd : client.getWorkingOnTasks()) {
+                    toReAdd.setStatus(TaskStatus.FAILED);
+                    historicalTasks.add(toReAdd);
+                }
+
+                client.getWorkingOnTasks().clear();
+                clients.remove(client.getId());
+                Platform.runLater(controller::refreshTaskList);
+            }
+        }
     }
 
     public static Scheduler getScheduler() {
@@ -90,16 +124,8 @@ public class Scheduler {
         return this.serverSocket != null && !this.serverSocket.isClosed();
     }
 
-    public void setClients(Map<String, Client> clients) {
-        this.clients = clients;
-    }
-
     public Map<String, Queue> getQueueMap() {
         return queueMap;
-    }
-
-    public void setQueueMap(Map<String, Queue> queueMap) {
-        this.queueMap = queueMap;
     }
 
     public Authorization getAuthorization() {
@@ -108,6 +134,14 @@ public class Scheduler {
 
     public void setAuthorization(Authorization authorization) {
         this.authorization = authorization;
+    }
+
+
+    public List<Task> getRunningTasksAsList() {
+        List<Task> tasks = new ArrayList<>();
+        queueMap.forEach((key, queue) -> tasks.addAll(queue.getNonScheduledTasks()));
+        tasks.removeIf(task -> task.getStatus() != TaskStatus.RUNNING);
+        return tasks;
     }
 
     //for gui - returns running and active tasks
@@ -150,7 +184,7 @@ public class Scheduler {
     }
 
     public void startListening(ApplicationController guiToRefresh) throws IOException {
-        serverSocket = new ServerSocket(6660);
+        serverSocket = new ServerSocket(port);
         //listen on new thread
 
         pool.submit(() -> {
@@ -159,7 +193,7 @@ public class Scheduler {
                 final Socket acceptedSocket;
                 try {
                     acceptedSocket = serverSocket.accept();
-                    acceptedSocket.setSoTimeout(20000); //20 s
+                    acceptedSocket.setSoTimeout(2000); //2 s
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -253,10 +287,14 @@ public class Scheduler {
                 .findAny();
         if (optTask.isPresent()) {
             Task task = optTask.get();
-            task.setStatus(TaskStatus.FAILED);
-            transferTaskToHistoryRecords(task);
-            client.getWorkingOnTasks().remove(task);
+            failTask(client, task);
         }
+    }
+
+    private void failTask(Client client, Task task) {
+        task.setStatus(TaskStatus.FAILED);
+        transferTaskToHistoryRecords(task);
+        client.getWorkingOnTasks().remove(task);
     }
 
     private void findTaskAndGiveItToClient(ApplicationController guiToRefresh, Socket acceptedSocket, DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, Client client) {
@@ -280,16 +318,18 @@ public class Scheduler {
                     client.setAvailableResources(Integer.parseInt(response));
                 }
             }
-
-            sendZipOfTask(out, aesEncrypting, givenTask);
             client.setLastReply(new Date());
+            sendZipOfTask(out, aesEncrypting, givenTask);
+            setTaskTimeout(givenTask);
+            client.setLastReply(new Date());
+            Platform.runLater(guiToRefresh::refreshTaskList);
             acceptedSocket.close();
         } catch (Exception e) {
             if (givenTask != null) {
                 //Schedule task again
                 givenTask.setStatus(TaskStatus.SCHEDULED);
-                givenTask.getWorker().getWorkingOnTasks().remove(givenTask);
-                givenTask.setWorker(null);
+                givenTask.getClient().getWorkingOnTasks().remove(givenTask);
+                givenTask.setClient(null);
                 if (!givenTask.getQueue().getTasks().contains(givenTask)) {
                     transferTaskToPriorityQueue(givenTask);
                 }
@@ -298,10 +338,17 @@ public class Scheduler {
         }
     }
 
+    private static void setTaskTimeout(Task givenTask) {
+        givenTask.setStartRunningTime(new Date());
+        givenTask.setTimeoutDeadline(new Date(givenTask.getStartRunningTime().getTime() + givenTask.getTimeoutInMillis()));
+    }
+
     private static void rescheduleTask(Socket acceptedSocket, Client client, Task givenTask) throws IOException {
         client.getWorkingOnTasks().remove(givenTask);
-        givenTask.setWorker(null);
+        givenTask.setClient(null);
         givenTask.setStatus(TaskStatus.SCHEDULED);
+        givenTask.setStartRunningTime(null);
+        givenTask.setTimeoutDeadline(null);
         transferTaskToPriorityQueue(givenTask);
         acceptedSocket.close();
         client.setLastReply(new Date());
@@ -324,12 +371,12 @@ public class Scheduler {
         Optional<Task> optTask = client.getWorkingOnTasks().stream()
                 .filter(t -> t.getId().equals(taskId))
                 .findAny();
-        System.out.println("receiving task results... id: " + taskId);
+        //System.out.println("receiving task results... id: " + taskId);
         Task task = receiveResultWithRetry(acceptedSocket, out, in, aesDecrypting, aesEncrypting, optTask, status);
         if (task != null) {
-            if (task.getStatus() != TaskStatus.FAILED) {
-                Persistence.cleanUp(task);
-            }
+            //  if (task.getStatus() != TaskStatus.FAILED) {
+            Persistence.cleanUp(task);
+            //  }
             transferTaskToHistoryRecords(task);
             client.getWorkingOnTasks().remove(task);
         }
@@ -338,7 +385,7 @@ public class Scheduler {
         client.setLastReply(new Date());
     }
 
-    private Task receiveResultWithRetry(Socket socket, DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, Optional<Task> optTask, TaskStatus statusInCaseOfSucc) throws IllegalBlockSizeException, BadPaddingException, IOException {
+    private Task receiveResultWithRetry(Socket socket, DataOutputStream out, InputStream in, Cipher aesDecrypting, Cipher aesEncrypting, Optional<Task> optTask, TaskStatus statusOnClient) throws IllegalBlockSizeException, BadPaddingException, IOException {
         if (optTask.isPresent()) {
 
             Task relatedTask = optTask.get();
@@ -346,7 +393,11 @@ public class Scheduler {
             for (int i = 0; i < Scheduler.NUMBER_OF_RETRY; i++) {
                 boolean gotResults = receiveTaskResults(aesDecrypting, in, relatedTask);
                 if (gotResults) {
-                    relatedTask.setStatus(statusInCaseOfSucc);
+                    if (statusOnClient == TaskStatus.WARNING) {
+                        relatedTask.setStatus(TaskStatus.WARNING);
+                    } else if (statusOnClient == TaskStatus.IN_TRANSFER) {
+                        relatedTask.setStatus(TaskStatus.FINISHED);
+                    }
                     //send message to client
                     sendEncryptedMessage(aesEncrypting, out, "FINISHED".getBytes(StandardCharsets.UTF_8));
                     return relatedTask;
@@ -360,7 +411,7 @@ public class Scheduler {
             }
         } else {
             //we did not find the task - return
-            System.out.println("no task found");
+            //System.out.println("no task found");
             sendEncryptedMessage(aesEncrypting, out, "NOT_FOUND".getBytes(StandardCharsets.UTF_8));
             socket.close();
             return null;
@@ -579,9 +630,8 @@ public class Scheduler {
             winningTask.getQueue().getNonScheduledTasks().add(givenTask);
 
             givenTask.setStatus(TaskStatus.RUNNING);
-            givenTask.setStartRunningTime(new Date());
             client.getWorkingOnTasks().add(givenTask);
-            givenTask.setWorker(client);
+            givenTask.setClient(client);
             Platform.runLater(guiToRefresh::refreshTaskList);
 
             return givenTask;
@@ -622,11 +672,42 @@ public class Scheduler {
         if (queue == null) {
             return false;
         }
+        int totalCount = queue.getTasks().size() + queue.getNonScheduledTasks().size();
+        if (totalCount >= queue.getCapacity()) {
+            //not enough space
+            return false;
+        }
 
         historicalTasks.remove(task);
+        //in case queue got deleted while task was historical
+        task.setQueue(queue);
         queue.getTasks().add(task);
 
         task.setStatus(TaskStatus.SCHEDULED);
         return true;
+    }
+
+    public long getClientTimeoutDeadline() {
+        return clientTimeoutDeadline;
+    }
+
+    public void setClientTimeoutDeadline(long clientTimeoutDeadline) {
+        this.clientTimeoutDeadline = clientTimeoutDeadline;
+    }
+
+    public long getClientNoResponseTime() {
+        return clientNoResponseTime;
+    }
+
+    public void setClientNoResponseTime(long clientNoResponseTime) {
+        this.clientNoResponseTime = clientNoResponseTime;
+    }
+
+    public long getTimeoutDelay() {
+        return timeoutDelay;
+    }
+
+    public void setTimeoutDelay(long timeoutDelay) {
+        this.timeoutDelay = timeoutDelay;
     }
 }

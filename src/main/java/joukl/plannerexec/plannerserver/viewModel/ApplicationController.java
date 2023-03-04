@@ -66,8 +66,6 @@ public class ApplicationController {
     @FXML
     private ListView<String> resultsLocationListView;
     @FXML
-    private Label repeatsLBL;
-    @FXML
     private Label costOfJobLBL;
     @FXML
     private Label statusLBL;
@@ -82,7 +80,10 @@ public class ApplicationController {
     @FXML
     private TableColumn<Client, Number> taskCountColumn;
     @FXML
+    private TableColumn<Client, Number> availableResourcesColumn;
+    @FXML
     private TableColumn<Client, String> statusColumn;
+
     @FXML
     private Label clientIdLbl;
     @FXML
@@ -101,6 +102,9 @@ public class ApplicationController {
     private Label runningTasksLbl;
     @FXML
     private Label reportingClientsLbl;
+    @FXML
+    private Label taskDeadlineLbl;
+
     private final ObservableList<Client> clientList = FXCollections.observableList(new LinkedList<>());
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -148,6 +152,7 @@ public class ApplicationController {
         clientIdColumn.setCellValueFactory((client) -> client == null ? null : new SimpleStringProperty(client.getValue().getId()));
         taskCountColumn.setCellValueFactory((client) -> client == null ? null : new SimpleIntegerProperty(client.getValue().getNumberOfTasks()));
         statusColumn.setCellValueFactory((client) -> client == null ? null : new SimpleStringProperty(client.getValue().getStatus().name()));
+        availableResourcesColumn.setCellValueFactory((client) -> client == null ? null : new SimpleIntegerProperty(client.getValue().getAvailableResources()));
         refreshQueueList();
         refreshServerKeyStatus();
         refreshClientKeyStatus();
@@ -162,7 +167,7 @@ public class ApplicationController {
             clientList.clear();
         }
 
-        Scheduler.getScheduler().getClients().forEach((key, value) -> {
+        clientMap.forEach((key, value) -> {
             if (!clientList.contains(value)) {
                 clientList.add(value);
             }
@@ -240,6 +245,11 @@ public class ApplicationController {
                 showError("Task upload failed", "Queue doesn't exist", "Queue specified in config.json was not found.");
                 return;
             }
+            int totalCount = readTask.getQueue().getTasks().size() + readTask.getQueue().getNonScheduledTasks().size();
+            if (totalCount >= readTask.getQueue().getCapacity()) {
+                showError("Task upload failed", "Queue has insufficient capacity", "Queue specified in config.json has not enough capacity");
+                return;
+            }
             readTask.getQueue().getNonScheduledTasks().add(readTask);
             showInfo("Task uploaded successfully", "Task uploaded successfully", "Task with name: " + readTask.getName() + " has been uploaded successfully to the queue: " + readTask.getQueue().getName() + ". Zip of the file will be transferred in background and scheduled when ready.");
             refreshTaskList();
@@ -294,7 +304,11 @@ public class ApplicationController {
         costOfJobLBL.setText(String.valueOf(task.getCost()));
         statusLBL.setText(task.getStatus().toString());
         queueLBL.setText(task.getQueue().getName());
-        repeatsLBL.setText(String.valueOf(Math.abs(task.getFrom() - task.getTo())));
+        if (task.getTimeoutDeadline() != null) {
+            taskDeadlineLbl.setText(dateFormat.format(task.getTimeoutDeadline()));
+        } else {
+            taskDeadlineLbl.setText("No deadline");
+        }
 
         retryJobButton.setDisable(task.getStatus() != TaskStatus.FAILED);
     }
@@ -304,7 +318,7 @@ public class ApplicationController {
 
         clientResponseLbl.setText(dateFormat.format(client.getLastReply()));
 
-        clientResponseDeadlineLbl.setText(dateFormat.format(new Date(client.getLastReply().getTime() + Scheduler.CLIENT_TIMEOUT_DEADLINE)));
+        clientResponseDeadlineLbl.setText(dateFormat.format(new Date(client.getLastReply().getTime() + Scheduler.getScheduler().getClientTimeoutDeadline())));
 
         clientResponseStatusLbl.setText(client.getStatus().name());
 
@@ -326,7 +340,7 @@ public class ApplicationController {
             if (succ) {
                 refreshTaskList();
             } else {
-                showError("Retrying of task failed", "Refreshing of task failed", "Retrying of task failed because queue associated with task is missing. ");
+                showError("Retrying of task failed", "Retrying of task failed", "Retrying of task failed, check queue - it is either missing or full.");
             }
         }
     }

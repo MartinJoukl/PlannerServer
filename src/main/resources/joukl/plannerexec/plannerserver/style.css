@@ -35,7 +35,7 @@
 }
 
 .tab-pane .tab {
-    -fx-background-color: #03C988;
+    -fx-background-color: #04c083;
     -fx-padding: 5px 10px;
 }
 
@@ -55,9 +55,10 @@
 .button {
     -fx-background-radius: 0;
     -fx-padding: 10px;
-    -fx-background-color: #03C988;
+    -fx-background-color: #04c083;
     -fx-text-fill: white;
     -fx-font-weight: bold;
+    -fx-background-insets:0;
 }
 
 .button:hover {
@@ -79,7 +80,7 @@
 
 .table-view .column-header {
     -fx-padding: 10px;
-    -fx-background-color: #03C988;
+    -fx-background-color: #04c083;
 }
 
 .table-view .column-header {

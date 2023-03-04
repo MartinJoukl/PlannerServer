@@ -1,0 +1,14 @@
+{
+    "queues":[
+        {
+            "name":"test Queue",
+            "agents":["WINDOWS","LINUX"],
+            "capacity": 100,
+            "priority": 5
+        }
+    ],
+    "port":6660,
+    "clientTimeoutDeadline": 20000,
+    "clientNoResponseTime":2000,
+    "taskTimeoutDelay":2000
+}
