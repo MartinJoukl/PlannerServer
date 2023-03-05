@@ -241,6 +241,11 @@ public class ApplicationController {
         try {
             Task readTask = Persistence.readTaskConfiguration(configFile);
             readTask.setPathToSourceDirectory(directory.getAbsolutePath());
+            if (!Task.validateCorrectParametrization(readTask)) {
+                showError("Task upload failed", "Parametrized values are not valid", "Check that parametrized values contain only parametrizedFrom AND parametrizedTo OR only parametrizedValues and at max only one %% parameter.");
+                return;
+            }
+
             if (readTask.getQueue() == null) {
                 showError("Task upload failed", "Queue doesn't exist", "Queue specified in config.json was not found.");
                 return;

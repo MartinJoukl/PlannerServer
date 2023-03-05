@@ -16,9 +16,10 @@ public class Sleeper {
         }
         File folder = new File("res");
         folder.mkdirs();
-        BufferedWriter writer = new BufferedWriter(new FileWriter("res/testik.txt"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter("res/testik.txt",true));
         writer.write(result);
 
         writer.close();
+        System.out.println(result);
     }
 }

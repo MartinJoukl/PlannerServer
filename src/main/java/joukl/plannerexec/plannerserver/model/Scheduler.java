@@ -50,10 +50,11 @@ public class Scheduler {
         ApplicationController controller = ApplicationController.getGuiController();
         observer.scheduleAtFixedRate(() -> {
             try {
+                checkForClientResponse(controller);
+
                 //refresh gui - dirty
                 Platform.runLater(controller::refreshClientList);
 
-                checkForClientResponse(controller);
                 List<Task> activeTasks = getRunningTasksAsList();
 
                 for (Task activeTask : activeTasks
@@ -78,22 +79,29 @@ public class Scheduler {
     }
 
     private void checkForClientResponse(ApplicationController controller) {
-        List<Client> nonRespondingClients = clients.values().stream()
-                .filter((client) -> new Date(client.getLastReply().getTime() + clientNoResponseTime).before(new Date()))
-                .toList();
-        for (Client client : nonRespondingClients
-        ) {
-            client.setStatus(ClientStatus.NO_RESPONSE);
-            if (new Date(client.getLastReply().getTime() + clientTimeoutDeadline).before(new Date())) {
-                //remove client and add tasks to failed list
-                for (Task toReAdd : client.getWorkingOnTasks()) {
-                    toReAdd.setStatus(TaskStatus.FAILED);
-                    historicalTasks.add(toReAdd);
-                }
+        for (Client client : clients.values()) {
+            if (new Date(client.getLastReply().getTime() + clientNoResponseTime).before(new Date())) {
+                //check if final deadline passed
+                if (new Date(client.getLastReply().getTime() + clientTimeoutDeadline).before(new Date())) {
+                    //remove client and add tasks to failed list
+                    for (Task toReAdd : client.getWorkingOnTasks()) {
+                        toReAdd.setStatus(TaskStatus.FAILED);
+                        historicalTasks.add(toReAdd);
+                    }
 
-                client.getWorkingOnTasks().clear();
-                clients.remove(client.getId());
-                Platform.runLater(controller::refreshTaskList);
+                    client.getWorkingOnTasks().clear();
+                    clients.remove(client.getId());
+                    Platform.runLater(controller::refreshTaskList);
+                } else {
+                    //or mark client as not responding
+                    client.setStatus(ClientStatus.NO_RESPONSE);
+                }
+            } else {
+                if (client.getWorkingOnTasks().size() > 0) {
+                    client.setStatus(ClientStatus.WORKING);
+                } else {
+                    client.setStatus(ClientStatus.ACTIVE);
+                }
             }
         }
     }

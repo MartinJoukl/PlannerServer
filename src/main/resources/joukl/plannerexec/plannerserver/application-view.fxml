@@ -52,15 +52,15 @@
                                        </rowConstraints>
                                        <children>
                                           <Label text="Worker id" />
-                                          <Label fx:id="clientIdLbl" text="select a worker first.." GridPane.columnIndex="1" />
+                                          <Label fx:id="clientIdLbl" text="Select a worker first.." GridPane.columnIndex="1" />
                                           <Label text="Last response time" GridPane.rowIndex="1" />
-                                          <Label fx:id="clientResponseLbl" text="select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                          <Label fx:id="clientResponseLbl" text="Select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                           <Label text="Status" GridPane.rowIndex="3" />
-                                          <Label fx:id="clientResponseDeadlineLbl" text="select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                          <Label fx:id="clientResponseDeadlineLbl" text="Select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                           <Label text="Agent" GridPane.rowIndex="4" />
                                           <Label text="Deadline" GridPane.rowIndex="2" />
-                                          <Label fx:id="clientResponseStatusLbl" text="select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                          <Label fx:id="clientAgentLbl" text="select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                          <Label fx:id="clientResponseStatusLbl" text="Select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                          <Label fx:id="clientAgentLbl" text="Select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="4" />
                                        </children>
                                        <VBox.margin>
                                           <Insets top="20.0" />
@@ -103,10 +103,10 @@
                                     <Label styleClass="heading" text="Reporting workers" />
                                     <TableView fx:id="clientTableView" VBox.vgrow="ALWAYS">
                                       <columns>
-                                        <TableColumn fx:id="clientIdColumn" editable="false" prefWidth="310.0" resizable="false" text="Worker ID" />
-                                        <TableColumn fx:id="taskCountColumn" editable="false" minWidth="0.0" prefWidth="135.0" resizable="false" text="Task count" />
+                                        <TableColumn fx:id="clientIdColumn" editable="false" prefWidth="297.0" resizable="false" text="Worker ID" />
+                                        <TableColumn fx:id="taskCountColumn" editable="false" minWidth="0.0" prefWidth="148.0" resizable="false" text="Task count" />
                                           <TableColumn fx:id="availableResourcesColumn" editable="false" minWidth="0.0" prefWidth="162.0" resizable="false" text="Available resources" />
-                                          <TableColumn fx:id="statusColumn" editable="false" minWidth="0.0" prefWidth="166.0" resizable="false" text="Status" />
+                                          <TableColumn fx:id="statusColumn" editable="false" minWidth="0.0" prefWidth="161.0" resizable="false" text="Status" />
                                       </columns>
                                        <VBox.margin>
                                           <Insets top="20.0" />

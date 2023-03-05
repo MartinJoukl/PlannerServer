@@ -26,9 +26,11 @@ public class Task {
     private String pathToSourceDirectory;
     @JsonIgnore
     private String pathToZipFile;
-    private int from;
+    private Integer from;
 
-    private int to;
+    private Integer to;
+
+    private List<String> parametrizedValues;
     private boolean isRepeating;
     @JsonProperty("timeout")
     private long timeoutInMillis;
@@ -60,19 +62,19 @@ public class Task {
         this.parameters = parameters;
     }
 
-    public int getFrom() {
+    public Integer getFrom() {
         return from;
     }
 
-    public void setFrom(int from) {
+    public void setFrom(Integer from) {
         this.from = from;
     }
 
-    public int getTo() {
+    public Integer getTo() {
         return to;
     }
 
-    public void setTo(int to) {
+    public void setTo(Integer to) {
         this.to = to;
     }
 
@@ -82,6 +84,14 @@ public class Task {
 
     public void setRepeating(boolean repeating) {
         isRepeating = repeating;
+    }
+
+    public List<String> getParametrizedValues() {
+        return parametrizedValues;
+    }
+
+    public void setParametrizedValues(List<String> parametrizedValues) {
+        this.parametrizedValues = parametrizedValues;
     }
 
     public long getTimeoutInMillis() {
@@ -188,9 +198,11 @@ public class Task {
         this.client = client;
     }
 
-    public Task(@JsonProperty("cost") int cost, @JsonProperty("name") String name,
-                @JsonProperty("commandToExecute") String commandToExecute, @JsonProperty("pathToResults") List<String> pathToResults,
-                @JsonProperty("timeout") long timeoutInMillis, @JsonProperty("priority") int priority, @JsonProperty("queue") String queueName, @JsonProperty("executePath") String executePath) {
+    public Task(@JsonProperty("cost") int cost, @JsonProperty("name") String name, @JsonProperty("commandToExecute") String commandToExecute,
+                @JsonProperty("pathToResults") List<String> pathToResults, @JsonProperty("timeout") long timeoutInMillis,
+                @JsonProperty("priority") int priority, @JsonProperty("queue") String queueName, @JsonProperty("executePath") String executePath,
+                @JsonProperty("parametrizedFrom") Integer parametrizedFrom, @JsonProperty("parametrizedTo") Integer parametrizedTo,
+                @JsonProperty("parametrizedValues") List<String> parametrizedValues) {
         this.cost = cost;
         this.name = name;
         this.commandToExecute = commandToExecute;
@@ -199,9 +211,33 @@ public class Task {
         this.priority = priority;
         this.queue = Scheduler.getScheduler().getQueueMap().get(queueName);
         this.executePath = executePath;
+        this.from = parametrizedFrom;
+        this.to = parametrizedTo;
+        this.parametrizedValues = parametrizedValues;
 
         this.id = UUID.randomUUID().toString();
 
         this.status = TaskStatus.UPLOADING;
+    }
+
+    public static boolean validateCorrectParametrization(Task task) {
+
+        if (task.from == null && task.to == null && (task.parametrizedValues == null || task.parametrizedValues.isEmpty())) {
+            // validation is correct if task doesn't contain parametrized value
+            return !task.getParameters().contains("%%");
+        }
+        //we need to check that parameters are present at max only once
+        if (task.getParameters().stream().filter((p) -> p.equals("%%")).count() > 1) {
+            return false;
+        }
+        //NOTE - we don't check for existence of %% because we will run process X times based on params - we will just not fill in any params
+        //else we need to check that correct parameters are filled
+        // we have task from, we have to have task to and parametrized values can't be filled
+        if (task.from != null) {
+            return task.to != null && (task.parametrizedValues == null || task.parametrizedValues.isEmpty());
+        } else {
+            //else we have to have the parametrized values filled, but task has to be null
+            return task.to == null && task.parametrizedValues != null && !task.parametrizedValues.isEmpty();
+        }
     }
 }
