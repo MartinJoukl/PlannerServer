@@ -1,0 +1,14 @@
+{
+    "name":"Sleeping some time",
+    "cost":18,
+    "priority":150,
+    "executePath":"javaSleeper",
+    "commandToExecute":"java Sleeper",
+    "pathToResults":["javaSleeper/res","image/Yumechi.jpg"],
+    "parameters":[1000,"%%","First", "Argument","Determines","Sleep","Time"],
+    "parametrizedFrom": 0,
+    "parametrizedTo": 20,
+    "parametrizedValues":null,
+    "timeout": 50000,
+    "queue":"test Priority Queue"
+}

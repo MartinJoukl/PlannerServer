@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.Spinner?>
@@ -34,6 +35,7 @@
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
@@ -41,8 +43,8 @@
                   <Label text="Allowed agents" GridPane.rowIndex="1" />
                   <Label text="Capacity" GridPane.rowIndex="2" />
                   <Label text="Priority" GridPane.rowIndex="3" />
-                  <Button fx:id="confirmQueueButton" mnemonicParsing="false" onAction="#onActionConfirm" prefHeight="40.0" prefWidth="125.0" text="Confirm" GridPane.rowIndex="4" />
-                  <Button mnemonicParsing="false" onAction="#onActionCancel" prefHeight="40.0" prefWidth="125.0" styleClass="cancel" text="Cancel" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <Button fx:id="confirmQueueButton" mnemonicParsing="false" onAction="#onActionConfirm" prefHeight="40.0" prefWidth="125.0" text="Confirm" GridPane.rowIndex="5" />
+                  <Button mnemonicParsing="false" onAction="#onActionCancel" prefHeight="40.0" prefWidth="125.0" styleClass="cancel" text="Cancel" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                   <Spinner fx:id="prioritySpinner" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                   <Spinner fx:id="capacitySpinner" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                   <TextField fx:id="queueNameTextField" maxWidth="150.0" GridPane.columnIndex="1">
@@ -50,8 +52,13 @@
                         <Insets />
                      </GridPane.margin>
                   </TextField>
-                  <MenuButton fx:id="agentsMenuButton" mnemonicParsing="false" prefWidth="150.0" text="Select agent/s" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <MenuButton fx:id="agentsMenuButton" mnemonicParsing="false" prefWidth="150.0" styleClass="combos" text="Select agent/s" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <Label text="Planning mode" GridPane.rowIndex="4" />
+                  <ComboBox fx:id="planningModeComboBox" prefWidth="150.0" promptText="Select planning mode" styleClass="combos" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                </children>
+               <padding>
+                  <Insets bottom="15.0" />
+               </padding>
             </GridPane>
          </children>
          <padding>

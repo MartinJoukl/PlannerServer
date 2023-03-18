@@ -4,15 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3537eab3-212d-4914-9401-bfe3598ee84e" name="Changes" comment="Impl. task deadline, loading from config, bugfixes">
+    <list default="true" id="3537eab3-212d-4914-9401-bfe3598ee84e" name="Changes" comment="Add FIFO planning mode">
+      <change afterPath="$PROJECT_DIR$/storage/results/Sleeping some time/062c5694-509a-478c-a373-57e093868642.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Sleeping some time/0b8cfe73-61d3-4bee-93b7-d9fe216a1d75.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Sleeping some time/10a65a5c-8eaf-413b-ac4c-9a70d51c1e23.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Sleeping some time/1638cbf9-6970-497c-a327-9cbaa0ed5d76.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Sleeping some time/9095bac7-c819-462a-8dc4-aef0afa8c348.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Sleeping some time/b257729c-6347-4dc2-ae0b-aa1ff97eff91.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Sleeping some time/b3a4073b-15f9-4762-a576-07117c607a19.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Sleeping some time/ccc6da29-1aba-49a3-8015-161ae6815d5c.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Sleeping some time/d210b856-b85a-4bcf-b715-27502a2d64d1.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Sleeping some time/e99f3844-0f60-4b9f-891d-5c9fb9f34893.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/results/Sleeping some time/fb6900f8-89fe-43f1-82e5-f08bb73d46fc.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/61ef2165-834a-45dc-bad2-439c3b963deb.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/b3010046-d8da-4845-917d-aa473ac8b8b0.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/d395c298-b729-4742-9366-4cfa9a3da77a.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/d7aa97a6-8914-4db2-b9ec-77d58c21ebfa.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/e4790b65-01f1-4688-9086-dc71a1ec165a.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/tasks/f24373b3-f228-43c8-b09a-b7c0e0167754.zip" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/pokusTask/payload/javaSleeper/Sleeper.class" beforeDir="false" afterPath="$PROJECT_DIR$/example/pokusTask/payload/javaSleeper/Sleeper.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/pokusTask/payload/javaSleeper/Sleeper.java" beforeDir="false" afterPath="$PROJECT_DIR$/example/pokusTask/payload/javaSleeper/Sleeper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/pokusTask/taskConfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/example/pokusTask/taskConfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/joukl/plannerexec/plannerserver/application-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/joukl/plannerexec/plannerserver/application-view.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,8 +34,8 @@
       <list>
         <option value="CSS File" />
         <option value="FxmlFile" />
-        <option value="Enum" />
         <option value="Class" />
+        <option value="Enum" />
       </list>
     </option>
   </component>
@@ -73,7 +83,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "C:/Users/joukl/IdeaProjects/PlannerServer",
+    "last_opened_file_path": "C:/Users/joukl/IdeaProjects/PlannerClient",
     "list.type.of.created.stylesheet": "CSS",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -89,6 +99,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
+      <recent name="joukl.plannerexec.plannerserver.viewModel" />
       <recent name="joukl.plannerexec.plannerserver.model" />
     </key>
     <key name="IntroduceConstantDialog.RECENTS_KEY">
@@ -158,7 +169,8 @@
       <workItem from="1677673373679" duration="14826000" />
       <workItem from="1677786640995" duration="10260000" />
       <workItem from="1677930913660" duration="28341000" />
-      <workItem from="1678010881588" duration="8597000" />
+      <workItem from="1678010881588" duration="8704000" />
+      <workItem from="1679156361927" duration="7454000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1676142097953</created>
@@ -265,7 +277,21 @@
       <option name="project" value="LOCAL" />
       <updated>1677972491536</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="Add parametrized execution">
+      <created>1678024410587</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1678024410587</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Add FIFO planning mode">
+      <created>1679164859739</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1679164859739</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -311,123 +337,37 @@
     <MESSAGE value="remove useless file" />
     <MESSAGE value="Refactoring + watcher for deadline" />
     <MESSAGE value="Impl. task deadline, loading from config, bugfixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Impl. task deadline, loading from config, bugfixes" />
+    <MESSAGE value="Add parametrized execution" />
+    <MESSAGE value="Add FIFO planning mode" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add FIFO planning mode" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>465</line>
+          <line>483</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>423</line>
+          <line>441</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>370</line>
+          <line>388</line>
           <option name="timeStamp" value="20" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>322</line>
+          <line>331</line>
           <option name="timeStamp" value="24" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>74</line>
+          <line>81</line>
           <option name="timeStamp" value="44" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>205</line>
-          <option name="timeStamp" value="50" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>213</line>
-          <option name="timeStamp" value="51" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>281</line>
-          <option name="timeStamp" value="52" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>335</line>
-          <option name="timeStamp" value="53" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>396</line>
-          <option name="timeStamp" value="54" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>262</line>
-          <option name="timeStamp" value="59" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>269</line>
-          <option name="timeStamp" value="60" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>264</line>
-          <option name="timeStamp" value="61" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>265</line>
-          <option name="timeStamp" value="62" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>382</line>
-          <option name="timeStamp" value="63" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>375</line>
-          <option name="timeStamp" value="64" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>376</line>
-          <option name="timeStamp" value="65" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>377</line>
-          <option name="timeStamp" value="66" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Scheduler.java</url>
-          <line>378</line>
-          <option name="timeStamp" value="67" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/viewModel/ApplicationController.java</url>
-          <line>248</line>
-          <option name="timeStamp" value="68" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java</url>
-          <line>230</line>
-          <option name="timeStamp" value="69" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/joukl/plannerexec/plannerserver/model/Task.java</url>
-          <line>229</line>
-          <properties>
-            <option name="lambda-ordinal" value="-1" />
-          </properties>
-          <option name="timeStamp" value="70" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

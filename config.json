@@ -1,8 +1,16 @@
 {
     "queues":[
         {
-            "name":"test Queue",
+            "name":"test Priority Queue",
             "agents":["WINDOWS","LINUX"],
+            "planningMode":"PRIORITY_QUEUE",
+            "capacity": 100,
+            "priority": 5
+        },
+        {
+            "name":"test FIFO",
+            "agents":["WINDOWS","LINUX"],
+            "planningMode":"FIFO",
             "capacity": 100,
             "priority": 5
         }

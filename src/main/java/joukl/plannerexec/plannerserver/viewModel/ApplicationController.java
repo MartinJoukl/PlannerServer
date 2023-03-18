@@ -126,7 +126,7 @@ public class ApplicationController {
         queueListView.setCellFactory(new QueueCellFactory());
         queueListView.getSelectionModel().selectedItemProperty().addListener((event) -> {
             Queue selectedQueue = queueListView.getSelectionModel().getSelectedItem();
-            removeQueueButton.setDisable(selectedQueue == null || selectedQueue.getTasks().size() != 0);
+            removeQueueButton.setDisable(selectedQueue == null || selectedQueue.getTaskSchedulingQueue().size() != 0);
         });
 
         clientList.addListener((ListChangeListener<? super Client>) (c) -> {
@@ -201,7 +201,7 @@ public class ApplicationController {
             onSelectedTask(selectedTask);
         }
         Queue selectedQueue = queueListView.getSelectionModel().getSelectedItem();
-        removeQueueButton.setDisable(selectedQueue == null || selectedQueue.getTasks().size() != 0);
+        removeQueueButton.setDisable(selectedQueue == null || selectedQueue.getTaskSchedulingQueue().size() != 0);
 
         scheduledTasksLbl.setText(String.valueOf(scheduledOrRunning.stream().filter(t -> t.getStatus() == TaskStatus.SCHEDULED).toList().size()));
         runningTasksLbl.setText(String.valueOf(scheduledOrRunning.stream().filter(t -> t.getStatus() == TaskStatus.RUNNING).toList().size()));
@@ -250,7 +250,7 @@ public class ApplicationController {
                 showError("Task upload failed", "Queue doesn't exist", "Queue specified in config.json was not found.");
                 return;
             }
-            int totalCount = readTask.getQueue().getTasks().size() + readTask.getQueue().getNonScheduledTasks().size();
+            int totalCount = readTask.getQueue().getTaskSchedulingQueue().size() + readTask.getQueue().getNonScheduledTasks().size();
             if (totalCount >= readTask.getQueue().getCapacity()) {
                 showError("Task upload failed", "Queue has insufficient capacity", "Queue specified in config.json has not enough capacity");
                 return;
@@ -284,7 +284,7 @@ public class ApplicationController {
 
                 //add task to queue
                 readTask.getQueue().getNonScheduledTasks().remove(readTask);
-                readTask.getQueue().getTasks().add(readTask);
+                readTask.getQueue().getTaskSchedulingQueue().add(readTask);
 
                 Platform.runLater(this::refreshTaskList);
             } catch (IOException | IllegalBlockSizeException | BadPaddingException e) {
@@ -453,7 +453,7 @@ public class ApplicationController {
         });
 
         Queue selectedQueue = queueListView.getSelectionModel().getSelectedItem();
-        removeQueueButton.setDisable(selectedQueue == null || selectedQueue.getTasks().size() != 0);
+        removeQueueButton.setDisable(selectedQueue == null || selectedQueue.getTaskSchedulingQueue().size() != 0);
     }
 
     @FXML

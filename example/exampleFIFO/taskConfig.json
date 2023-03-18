@@ -10,5 +10,5 @@
     "parametrizedTo": 20,
     "parametrizedValues":null,
     "timeout": 50000,
-    "queue":"test Queue"
+    "queue":"test FIFO"
 }

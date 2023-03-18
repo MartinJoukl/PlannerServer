@@ -32,13 +32,20 @@ public class Scheduler {
 
 
     private Scheduler() {
-        Configuration config = Persistence.readApplicationConfiguration();
+        Configuration config = null;
+        try {
+            config = Persistence.readApplicationConfiguration();
+        } catch (Exception e) {
+            System.out.println("Unexpected error during loading of configuration, default values will be used...");
+        }
         if (config != null) {
             timeoutDelay = config.getTaskTimeoutDelay();
             clientTimeoutDeadline = config.getClientTimeoutDeadline();
             clientNoResponseTime = config.getClientNoResponseTime();
             port = config.getPort();
             config.getQueues().forEach((q) -> queueMap.put(q.getName(), q));
+        } else {
+            System.out.println("No valid configuration found... using default values...\ntimeoutDelay: " + this.timeoutDelay + ", clientTimeoutDeadline: " + this.clientTimeoutDeadline + ", clientNoResponseTime: " + clientNoResponseTime + ", listening port: " + port);
         }
     }
 
@@ -72,7 +79,7 @@ public class Scheduler {
                     }
                 }
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                System.out.println("Observer exception: "+e.getMessage());
             }
 
         }, 0, 200, TimeUnit.MILLISECONDS);
@@ -155,7 +162,7 @@ public class Scheduler {
     //for gui - returns running and active tasks
     public List<Task> getActiveTasksAsList() {
         List<Task> tasks = new ArrayList<>();
-        queueMap.forEach((key, queue) -> tasks.addAll(queue.getTasks()));
+        queueMap.forEach((key, queue) -> tasks.addAll(queue.getTaskSchedulingQueue()));
         queueMap.forEach((key, queue) -> tasks.addAll(queue.getNonScheduledTasks()));
         return tasks;
     }
@@ -163,7 +170,7 @@ public class Scheduler {
 
     public List<Task> getAllTasksAsList() {
         List<Task> tasks = new ArrayList<>();
-        queueMap.forEach((key, queue) -> tasks.addAll(queue.getTasks()));
+        queueMap.forEach((key, queue) -> tasks.addAll(queue.getTaskSchedulingQueue()));
         queueMap.forEach((key, queue) -> tasks.addAll(queue.getNonScheduledTasks()));
         tasks.addAll(historicalTasks);
         return tasks;
@@ -184,7 +191,9 @@ public class Scheduler {
     }
 
     public void stopListening() throws IOException {
-        serverSocket.close();
+        if (serverSocket != null) {
+            serverSocket.close();
+        }
     }
 
     public List<Task> getHistoricalTasks() {
@@ -323,6 +332,7 @@ public class Scheduler {
                     rescheduleTask(acceptedSocket, client, givenTask);
                     return;
                 } else {
+                    removeFromFifo(givenTask);
                     client.setAvailableResources(Integer.parseInt(response));
                 }
             }
@@ -338,11 +348,18 @@ public class Scheduler {
                 givenTask.setStatus(TaskStatus.SCHEDULED);
                 givenTask.getClient().getWorkingOnTasks().remove(givenTask);
                 givenTask.setClient(null);
-                if (!givenTask.getQueue().getTasks().contains(givenTask)) {
-                    transferTaskToPriorityQueue(givenTask);
+                if (!givenTask.getQueue().getTaskSchedulingQueue().contains(givenTask)) {
+                    transferTaskToSchedulingQueue(givenTask);
                 }
                 Platform.runLater(guiToRefresh::refreshTaskList);
             }
+        }
+    }
+
+    private static void removeFromFifo(Task givenTask) {
+        if (givenTask.getQueue().getPlanningMode() == PlanningMode.FIFO) {
+            givenTask.getQueue().getTaskFIFO().remove(givenTask);
+            givenTask.getQueue().getNonScheduledTasks().add(givenTask);
         }
     }
 
@@ -357,16 +374,17 @@ public class Scheduler {
         givenTask.setStatus(TaskStatus.SCHEDULED);
         givenTask.setStartRunningTime(null);
         givenTask.setTimeoutDeadline(null);
-        transferTaskToPriorityQueue(givenTask);
+        if (givenTask.getQueue().getPlanningMode() == PlanningMode.PRIORITY_QUEUE) {
+            transferTaskToSchedulingQueue(givenTask);
+        }
         acceptedSocket.close();
         client.setLastReply(new Date());
-        return;
     }
 
-    public static void transferTaskToPriorityQueue(Task givenTask) {
+    public static void transferTaskToSchedulingQueue(Task givenTask) {
         try {
             givenTask.getQueue().getNonScheduledTasks().remove(givenTask);
-            givenTask.getQueue().getTasks().add(givenTask);
+            givenTask.getQueue().getTaskSchedulingQueue().add(givenTask);
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -593,6 +611,7 @@ public class Scheduler {
                 .toList();
     }
 
+    //NOTE - ITEMS FROM PRIORITY QUEUE ARE REMOVED FROM THE QUEUE, FROM FIFO, THEY ARE NOT!!! (because of replanning)
     private synchronized Task selectTaskAndRegisterIt(Client client, ApplicationController guiToRefresh) {
         List<String> subscribedQueues = client.getSubscribedQueues();
         //if client does not specify queues, subscribe to all
@@ -605,7 +624,7 @@ public class Scheduler {
         Collection<Queue> queues = queueMap.values();
         //get only queues that client contains, are of his agent, order them by priority
         List<Queue> subscribedNotIteratedQueues = new ArrayList<>(queues.stream().
-                filter((q) -> subscribedQueuesFinal.contains(q.getName()) && q.getAgents().contains(client.getAgent()) && !q.getTasks().isEmpty())
+                filter((q) -> subscribedQueuesFinal.contains(q.getName()) && q.getAgents().contains(client.getAgent()) && !q.getTaskSchedulingQueue().isEmpty())
                 .sorted(Comparator.comparingInt(Queue::getPriority).reversed())
                 .toList());
         //if we have no queue
@@ -622,7 +641,21 @@ public class Scheduler {
             // create common pool for task from queues
             List<Task> pickCandidates = new LinkedList<>();
             for (Queue queue : queuesWithSamePriority) {
-                Task potencialTask = queue.getTasks().peek();
+                Task potencialTask = null;
+                if (queue.getPlanningMode() == PlanningMode.PRIORITY_QUEUE) {
+                    potencialTask = queue.getTaskPriorityQueue().peek();
+                } else {
+                    //else get task from fifo
+                    int index = 0;
+                    do {
+                        Task iterated = queue.getTaskFIFO().get(index);
+                        if (iterated.getStatus() != TaskStatus.RUNNING) {
+                            potencialTask = iterated;
+                        }
+                        index++;
+                    } while (potencialTask == null && index < queue.getTaskFIFO().size() && potencialTask.getStatus() == TaskStatus.RUNNING);
+
+                }
                 if (potencialTask != null && potencialTask.getCost() <= client.getAvailableResources()) {
                     pickCandidates.add(potencialTask);
                 }
@@ -634,8 +667,15 @@ public class Scheduler {
             //get first element in sorted comparator according to comparator
             Task winningTask = pickCandidates.stream().sorted(Queue.TASK_COMPARATOR).findFirst().get();
 
-            Task givenTask = winningTask.getQueue().getTasks().remove();
-            winningTask.getQueue().getNonScheduledTasks().add(givenTask);
+            //remove candidate from priority queue
+            Queue queueWithWinningTask = winningTask.getQueue();
+            Task givenTask = null;
+            if (queueWithWinningTask.getPlanningMode() == PlanningMode.PRIORITY_QUEUE) {
+                givenTask = queueWithWinningTask.getTaskPriorityQueue().remove();
+                winningTask.getQueue().getNonScheduledTasks().add(givenTask);
+            } else {
+                givenTask = queueWithWinningTask.getTaskFIFO().get(0);
+            }
 
             givenTask.setStatus(TaskStatus.RUNNING);
             client.getWorkingOnTasks().add(givenTask);
@@ -667,7 +707,7 @@ public class Scheduler {
     public void deleteQueueByName(String queueName) {
         Queue queue = queueMap.get(queueName);
 
-        if (queue != null && queue.getTasks().isEmpty()) {
+        if (queue != null && queue.getTaskSchedulingQueue().isEmpty()) {
             queueMap.remove(queueName);
         }
     }
@@ -680,7 +720,7 @@ public class Scheduler {
         if (queue == null) {
             return false;
         }
-        int totalCount = queue.getTasks().size() + queue.getNonScheduledTasks().size();
+        int totalCount = queue.getTaskSchedulingQueue().size() + queue.getNonScheduledTasks().size();
         if (totalCount >= queue.getCapacity()) {
             //not enough space
             return false;
@@ -689,7 +729,7 @@ public class Scheduler {
         historicalTasks.remove(task);
         //in case queue got deleted while task was historical
         task.setQueue(queue);
-        queue.getTasks().add(task);
+        queue.getTaskSchedulingQueue().add(task);
 
         task.setStatus(TaskStatus.SCHEDULED);
         return true;

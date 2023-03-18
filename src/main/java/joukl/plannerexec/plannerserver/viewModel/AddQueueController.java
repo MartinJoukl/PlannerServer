@@ -7,10 +7,8 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
-import joukl.plannerexec.plannerserver.model.Agent;
-import joukl.plannerexec.plannerserver.model.Client;
+import joukl.plannerexec.plannerserver.model.*;
 import joukl.plannerexec.plannerserver.model.Queue;
-import joukl.plannerexec.plannerserver.model.Scheduler;
 
 import java.util.*;
 
@@ -26,6 +24,8 @@ public class AddQueueController {
     private Spinner<Integer> capacitySpinner;
     @FXML
     private TextField queueNameTextField;
+    @FXML
+    private ComboBox<PlanningMode> planningModeComboBox;
     ObservableList<Agent> agents = FXCollections.observableList(Arrays.asList(Agent.values()));
     List<Agent> selectedAgents = new ArrayList<>();
 
@@ -33,10 +33,16 @@ public class AddQueueController {
     private void initialize() {
         fillOutSelectedAgents();
         fillOutSpinners();
+        fillOutQueueModeSelection();
         queueNameTextField.textProperty().addListener((val) -> {
             validateForm();
         });
         validateForm();
+    }
+
+    private void fillOutQueueModeSelection() {
+        planningModeComboBox.getItems().addAll(PlanningMode.PRIORITY_QUEUE, PlanningMode.FIFO);
+        planningModeComboBox.getSelectionModel().select(0);
     }
 
     private void fillOutSpinners() {
@@ -88,7 +94,7 @@ public class AddQueueController {
     }
 
     public void onActionConfirm(ActionEvent actionEvent) {
-        Queue queue = new Queue(queueNameTextField.getText().trim(), List.copyOf(selectedAgents), capacitySpinner.getValue(), prioritySpinner.getValue());
+        Queue queue = new Queue(queueNameTextField.getText().trim(), List.copyOf(selectedAgents), capacitySpinner.getValue(), prioritySpinner.getValue(), planningModeComboBox.getSelectionModel().getSelectedItem());
         Map<String, Queue> queueMap = Scheduler.getScheduler().getQueueMap();
         if (queueMap.containsKey(queue.getName())) {
             Alert alert = new Alert(Alert.AlertType.ERROR);

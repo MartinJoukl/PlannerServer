@@ -96,3 +96,11 @@
 .table-view .filler {
     -fx-background-color: #007c50;
 }
+.combos {
+    -fx-pref-height: 30px;
+    -fx-min-height: 30px;
+}
+
+.combos, .combos .label{
+    -fx-font-size: 12px;
+}
