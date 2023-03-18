@@ -57,43 +57,45 @@ public class Scheduler {
         ApplicationController controller = ApplicationController.getGuiController();
         observer.scheduleAtFixedRate(() -> {
             try {
-                checkForClientResponse(controller);
+                boolean clientFailed = checkForClientResponse(controller);
 
                 //refresh gui - dirty
                 Platform.runLater(controller::refreshClientList);
 
                 List<Task> activeTasks = getRunningTasksAsList();
+                boolean taskFailed = false;
 
                 for (Task activeTask : activeTasks
                 ) {
-                    boolean taskFailed = false;
                     // minus for some reason
                     if ((activeTask.getTimeoutDeadline() != null && new Date(System.currentTimeMillis() - timeoutDelay).after(activeTask.getTimeoutDeadline()))) {
                         failTask(activeTask.getClient(), activeTask);
                         //System.out.println("Task " + activeTask.getName() + ", id: " + activeTask.getId() + " has timed out!");
                         taskFailed = true;
                     }
+                }
 
-                    if (taskFailed) {
-                        Platform.runLater(controller::refreshTaskList);
-                    }
+
+                if (taskFailed || clientFailed) {
+                    Platform.runLater(controller::refreshTaskList);
                 }
             } catch (Exception e) {
-                System.out.println("Observer exception: "+e.getMessage());
+                System.out.println("Observer exception: " + e.getMessage());
             }
 
         }, 0, 200, TimeUnit.MILLISECONDS);
     }
 
-    private void checkForClientResponse(ApplicationController controller) {
+    private boolean checkForClientResponse(ApplicationController controller) {
+        boolean clientFailed = false;
         for (Client client : clients.values()) {
             if (new Date(client.getLastReply().getTime() + clientNoResponseTime).before(new Date())) {
                 //check if final deadline passed
                 if (new Date(client.getLastReply().getTime() + clientTimeoutDeadline).before(new Date())) {
+                    clientFailed = true;
                     //remove client and add tasks to failed list
                     for (Task toReAdd : client.getWorkingOnTasks()) {
-                        toReAdd.setStatus(TaskStatus.FAILED);
-                        historicalTasks.add(toReAdd);
+                        failTaskNotButNotOnClient(toReAdd);
                     }
 
                     client.getWorkingOnTasks().clear();
@@ -111,6 +113,7 @@ public class Scheduler {
                 }
             }
         }
+        return clientFailed;
     }
 
     public static Scheduler getScheduler() {
@@ -306,6 +309,11 @@ public class Scheduler {
             Task task = optTask.get();
             failTask(client, task);
         }
+    }
+
+    private void failTaskNotButNotOnClient(Task task) {
+        task.setStatus(TaskStatus.FAILED);
+        transferTaskToHistoryRecords(task);
     }
 
     private void failTask(Client client, Task task) {
