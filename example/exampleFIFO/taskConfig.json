@@ -4,7 +4,7 @@
     "priority":150,
     "executePath":"javaSleeper",
     "commandToExecute":"java Sleeper",
-    "pathToResults":["javaSleeper/res","image/Yumechi.jpg"],
+    "pathToResults":["javaSleeper/res","image/circles.jpg"],
     "parameters":[1000,"%%","First", "Argument","Determines","Sleep","Time"],
     "parametrizedFrom": 0,
     "parametrizedTo": 20,

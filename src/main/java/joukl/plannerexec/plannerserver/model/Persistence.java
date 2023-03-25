@@ -3,6 +3,8 @@ package joukl.plannerexec.plannerserver.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.Platform;
+import joukl.plannerexec.plannerserver.viewModel.ApplicationController;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -86,5 +88,33 @@ public class Persistence {
     public static void cleanUp(Task task) throws IOException {
         //Delete input data
         Files.delete(Path.of(Scheduler.PATH_TO_TASK_STORAGE + task.getId() + ".zip"));
+    }
+
+    public static void uploadTaskOnBackgroundThread(Task readTask, ApplicationController gui) {
+        readTask.getQueue().getNonScheduledTasks().add(readTask);
+        new Thread(() -> {
+            try {
+                FileOutputStream fos = new FileOutputStream(Scheduler.PATH_TO_TASK_STORAGE + readTask.getId() + ".zip");
+                ZipOutputStream zipOut = new ZipOutputStream(fos);
+
+                File fileToZip = new File(readTask.getPathToSourceDirectory());
+                zipFile(fileToZip, readTask.getId(), zipOut);
+                zipOut.close();
+                fos.close();
+
+                readTask.setStatus(TaskStatus.SCHEDULED);
+                readTask.setPathToZipFile(Scheduler.PATH_TO_TASK_STORAGE + readTask.getId() + ".zip");
+
+                //add task to queue
+                readTask.getQueue().getNonScheduledTasks().remove(readTask);
+                readTask.getQueue().getTaskSchedulingQueue().add(readTask);
+
+                Platform.runLater(gui::refreshTaskList);
+            } catch (IOException | IllegalBlockSizeException | BadPaddingException e) {
+                System.out.println("Uploading of zip of task failed - id: " + readTask.getId()); //just log, don't write anything else
+                readTask.setStatus(TaskStatus.FAILED);
+                Platform.runLater(gui::refreshTaskList);
+            }
+        }).start();
     }
 }

@@ -1,0 +1,2 @@
+https://github.com/MartinJoukl/PlannerClient.git
+https://github.com/MartinJoukl/PlannerServer.git

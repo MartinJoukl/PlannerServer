@@ -9,7 +9,7 @@ public class Queue {
     public static final Comparator<Task> TASK_COMPARATOR = Comparator.comparingInt(Task::getPriority).reversed();
     private String name;
     private List<Agent> agents;
-    //TODO vyřešit kapacitu
+    //TODO vyřešit kapacitu - je na FE jenom, to je špatně
     private int capacity;
     private PlanningMode planningMode = PlanningMode.PRIORITY_QUEUE;
     //Queue for running tasks

@@ -51,16 +51,16 @@
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                        </rowConstraints>
                                        <children>
-                                          <Label text="Worker id" />
-                                          <Label fx:id="clientIdLbl" text="Select a worker first.." GridPane.columnIndex="1" />
+                                          <Label text="Client Id" />
+                                          <Label fx:id="clientIdLbl" text="Select a client first.." GridPane.columnIndex="1" />
                                           <Label text="Last response time" GridPane.rowIndex="1" />
-                                          <Label fx:id="clientResponseLbl" text="Select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                          <Label fx:id="clientResponseLbl" text="Select a client first.." GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                           <Label text="Status" GridPane.rowIndex="3" />
-                                          <Label fx:id="clientResponseDeadlineLbl" text="Select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                          <Label fx:id="clientResponseDeadlineLbl" text="Select a client first.." GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                           <Label text="Agent" GridPane.rowIndex="4" />
                                           <Label text="Deadline" GridPane.rowIndex="2" />
-                                          <Label fx:id="clientResponseStatusLbl" text="Select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                          <Label fx:id="clientAgentLbl" text="Select a worker first.." GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                          <Label fx:id="clientResponseStatusLbl" text="Select a client first.." GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                          <Label fx:id="clientAgentLbl" text="Select a client first.." GridPane.columnIndex="1" GridPane.rowIndex="4" />
                                        </children>
                                        <VBox.margin>
                                           <Insets top="20.0" />
@@ -100,10 +100,10 @@
                               </VBox>
                               <VBox alignment="CENTER" GridPane.columnIndex="1">
                                  <children>
-                                    <Label styleClass="heading" text="Reporting workers" />
+                                    <Label styleClass="heading" text="Reporting clients" />
                                     <TableView fx:id="clientTableView" VBox.vgrow="ALWAYS">
                                       <columns>
-                                        <TableColumn fx:id="clientIdColumn" editable="false" prefWidth="297.0" resizable="false" text="Worker ID" />
+                                        <TableColumn fx:id="clientIdColumn" editable="false" prefWidth="297.0" resizable="false" text="Client ID" />
                                         <TableColumn fx:id="taskCountColumn" editable="false" minWidth="0.0" prefWidth="148.0" resizable="false" text="Task count" />
                                           <TableColumn fx:id="availableResourcesColumn" editable="false" minWidth="0.0" prefWidth="162.0" resizable="false" text="Available resources" />
                                           <TableColumn fx:id="statusColumn" editable="false" minWidth="0.0" prefWidth="161.0" resizable="false" text="Status" />
@@ -269,7 +269,7 @@
                                                 <Insets left="10.0" />
                                              </padding>
                                           </Button>
-                                          <Label text="Worker public key" GridPane.rowIndex="6" />
+                                          <Label text="Client public key" GridPane.rowIndex="6" />
                                           <Button mnemonicParsing="false" onAction="#onActionGeneratePrivateKey" prefHeight="40.0" prefWidth="125.0" text="Generate new" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                              <GridPane.margin>
                                                 <Insets top="10.0" />
@@ -277,7 +277,7 @@
                                           </Button>
                                           <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                              <children>
-                                                <Button mnemonicParsing="false" onAction="#onActionUploadWorkerKey" prefHeight="40.0" prefWidth="200.0" text="Upload worker public key ..." textAlignment="CENTER">
+                                                <Button mnemonicParsing="false" onAction="#onActionUploadWorkerKey" prefHeight="40.0" prefWidth="200.0" text="Upload client public key ..." textAlignment="CENTER">
                                                    <HBox.margin>
                                                       <Insets />
                                                    </HBox.margin></Button>

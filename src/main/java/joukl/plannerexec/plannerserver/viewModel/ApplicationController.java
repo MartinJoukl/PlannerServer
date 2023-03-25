@@ -1,6 +1,5 @@
 package joukl.plannerexec.plannerserver.viewModel;
 
-import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -20,18 +19,12 @@ import joukl.plannerexec.plannerserver.SchedulerGui;
 import joukl.plannerexec.plannerserver.model.*;
 import joukl.plannerexec.plannerserver.model.Queue;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.zip.ZipOutputStream;
-
-import static joukl.plannerexec.plannerserver.model.Persistence.zipFile;
 
 public class ApplicationController {
     private final String KEY_ACTIVE = "Key in use";
@@ -255,44 +248,16 @@ public class ApplicationController {
                 showError("Task upload failed", "Queue has insufficient capacity", "Queue specified in config.json has not enough capacity");
                 return;
             }
-            readTask.getQueue().getNonScheduledTasks().add(readTask);
             showInfo("Task uploaded successfully", "Task uploaded successfully", "Task with name: " + readTask.getName() + " has been uploaded successfully to the queue: " + readTask.getQueue().getName() + ". Zip of the file will be transferred in background and scheduled when ready.");
-            refreshTaskList();
 
-            //mixing view model and model :O
-            finishUploadOnBackgroundThread(readTask);
+            //upload the task
+            Persistence.uploadTaskOnBackgroundThread(readTask, this);
+            refreshTaskList();
             selectTask(readTask);
         } catch (Exception ex) {
             showError("Unsuccessful parsing", "Configuration file was not parsed successfully", "Task parsing failed with following message: " + ex.getMessage());
         }
 
-    }
-
-    private void finishUploadOnBackgroundThread(Task readTask) {
-        new Thread(() -> {
-            try {
-                FileOutputStream fos = new FileOutputStream(Scheduler.PATH_TO_TASK_STORAGE + readTask.getId() + ".zip");
-                ZipOutputStream zipOut = new ZipOutputStream(fos);
-
-                File fileToZip = new File(readTask.getPathToSourceDirectory());
-                zipFile(fileToZip, readTask.getId(), zipOut);
-                zipOut.close();
-                fos.close();
-
-                readTask.setStatus(TaskStatus.SCHEDULED);
-                readTask.setPathToZipFile(Scheduler.PATH_TO_TASK_STORAGE + readTask.getId() + ".zip");
-
-                //add task to queue
-                readTask.getQueue().getNonScheduledTasks().remove(readTask);
-                readTask.getQueue().getTaskSchedulingQueue().add(readTask);
-
-                Platform.runLater(this::refreshTaskList);
-            } catch (IOException | IllegalBlockSizeException | BadPaddingException e) {
-                System.out.println("Uploading of zip of task failed - id: " + readTask.getId()); //just log, don't write anything else
-                readTask.setStatus(TaskStatus.FAILED);
-                Platform.runLater(this::refreshTaskList);
-            }
-        }).start();
     }
 
     private void selectTask(Task task) {
